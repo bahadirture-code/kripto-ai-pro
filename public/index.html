@@ -1,0 +1,701 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <title>Kripto AI Pro - Ultimate v7</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; transition: background 0.3s, color 0.3s; }
+    :root {
+      --bg: #f4f6ff; --card: #ffffff; --text: #1e293b; --text2: #64748b;
+      --border: #e2e8f0; --primary: #6366f1; --success: #10b981; --danger: #ef4444; --warning: #f59e0b;
+    }
+    body.dark {
+      --bg: #0f172a; --card: #1e293b; --text: #f8fafc; --text2: #94a3b8;
+      --border: #334155; --primary: #818cf8; --success: #34d399; --danger: #f87171; --warning: #fbbf24;
+    }
+    body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); padding: 20px; display: flex; justify-content: center; }
+    .container { max-width: 1300px; width: 100%; }
+    .card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 20px; margin-bottom: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.03); }
+    .flex-header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
+    .btn { padding: 8px 16px; border-radius: 10px; border: none; font-weight: 700; cursor: pointer; background: var(--primary); color: #fff; font-size: 13px; }
+    .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text); }
+    .btn-danger { background: var(--danger); color: #fff; }
+    .btn-success { background: var(--success); color: #fff; }
+    input, select { padding: 10px 14px; border-radius: 10px; border: 1px solid var(--border); background: var(--card); color: var(--text); width: 100%; font-size: 14px; }
+    .stat-value { font-size: 24px; font-weight: 700; margin-top: 4px; }
+    .positive { color: var(--success); }
+    .negative { color: var(--danger); }
+    
+    .flash-green { animation: flashG 0.8s ease; }
+    .flash-red { animation: flashR 0.8s ease; }
+    @keyframes flashG { 0% { background: rgba(16, 185, 129, 0.4); } 100% { background: transparent; } }
+    @keyframes flashR { 0% { background: rgba(239, 68, 68, 0.4); } 100% { background: transparent; } }
+
+    #debug { background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.3); padding: 12px 16px; border-radius: 10px; font-family: monospace; font-size: 13px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; }
+    #debug.error { background: rgba(239, 68, 68, 0.1); border-color: rgba(239, 68, 68, 0.3); color: var(--danger); }
+    #debug.success { background: rgba(16, 185, 129, 0.1); border-color: rgba(16, 185, 129, 0.3); color: var(--success); }
+
+    .chart-wrap { height: 300px; width: 100%; position: relative; }
+    .search-results { position: absolute; background: var(--card); border: 1px solid var(--border); border-radius: 10px; max-height: 220px; overflow-y: auto; width: 100%; max-width: 450px; z-index: 100; display: none; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
+    .search-item { padding: 10px 14px; cursor: pointer; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; }
+    .search-item:hover { background: rgba(99, 102, 241, 0.1); }
+    .tag { background: rgba(99, 102, 241, 0.1); color: var(--primary); padding: 6px 12px; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 600; display: inline-block; margin-right: 6px; margin-top: 6px; }
+    .fav-tag { background: rgba(16, 185, 129, 0.1); color: var(--success); border: 1px solid rgba(16, 185, 129, 0.2); }
+    
+    .trend-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 15px; margin-top: 15px; }
+    .trend-item { display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; border-bottom: 1px solid var(--border); cursor: pointer; border-radius: 8px; }
+    .trend-item:hover { background: rgba(99, 102, 241, 0.05); }
+
+    .ai-box { background: rgba(99, 102, 241, 0.05); border-left: 4px solid var(--primary); padding: 16px; border-radius: 0 12px 12px 0; margin-top: 12px; white-space: pre-wrap; line-height: 1.6; display: none; }
+    .star-btn { cursor: pointer; font-size: 20px; vertical-align: middle; margin-left: 8px; user-select: none; }
+    .spinner { display: inline-block; width: 18px; height: 18px; border: 3px solid rgba(255,255,255,.3); border-radius: 50%; border-top-color: #fff; animation: spin 0.8s linear infinite; vertical-align: middle; margin-right: 6px; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 14px; }
+    th, td { padding: 10px; text-align: left; border-bottom: 1px solid var(--border); }
+    th { color: var(--text2); font-weight: 600; }
+  </style>
+</head>
+<body>
+<div class="container">
+  <div id="debug">
+    <span id="debugText">⏳ Sistem başlatıldı. Yeni modüller aktif.</span>
+    <span id="retryBtn" style="display:none; cursor:pointer; text-decoration:underline; font-weight:bold;" onclick="location.reload()">Yeniden Dene</span>
+  </div>
+
+  <!-- HEADER -->
+  <div class="card flex-header">
+    <div>
+      <h1>📊 Kripto AI Pro <span style="font-size: 12px; background: var(--primary); color: #fff; padding: 2px 8px; border-radius: 20px;">v7.0 Ultimate</span></h1>
+      <p style="color: var(--text2); margin-top: 4px;">Aktif Varlık: <strong id="coinNameDisplay" style="color: var(--primary);">Bitcoin (BTC)</strong> <span id="favStar" class="star-btn" onclick="toggleFavorite()">☆</span></p>
+    </div>
+    <div style="display: flex; gap: 10px; align-items: center;">
+      <select id="currencySelect" style="width: 105px;" onchange="changeCurrency()">
+        <option value="usd">USD ($)</option>
+        <option value="try">TRY (₺)</option>
+        <option value="eur">EUR (€)</option>
+      </select>
+      <button class="btn btn-outline" onclick="toggleTheme()">🌙 Tema</button>
+    </div>
+  </div>
+
+  <!-- PİYASA DUYARLILIK ENDEKSİ -->
+  <div class="card" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; padding: 15px 20px;">
+    <div>
+      <h4 style="font-size: 14px; color: var(--text2);">🧭 Piyasa Duygu Durumu (Fear & Greed Index)</h4>
+      <div id="fearGreedText" style="font-size: 18px; font-weight: 700; margin-top: 2px;">Yükleniyor...</div>
+    </div>
+    <div style="background: rgba(99,102,241,0.1); padding: 8px 16px; border-radius: 12px; font-weight: 600; color: var(--primary);" id="fearGreedVal">-</div>
+  </div>
+
+  <!-- ARAMA VE FAVORİLER -->
+  <div class="card" style="position: relative;">
+    <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 12px;">
+      <div style="position: relative; flex: 1; min-width: 280px; max-width: 450px;">
+        <input type="text" id="coinSearch" placeholder="Piyasada coin ara (örn: Solana, Ripple, PEPE)..." autocomplete="off">
+        <div id="searchResults" class="search-results"></div>
+      </div>
+    </div>
+    <div>
+      <span style="font-size: 12px; color: var(--text2); display: block; margin-bottom: 4px;">⭐ Favori Takip Listesi:</span>
+      <div id="favoritesContainer"><span style="font-size: 13px; color: var(--text2);">Henüz favori eklenmedi.</span></div>
+    </div>
+    <div style="margin-top: 10px;">
+      <span style="font-size: 12px; color: var(--text2); display: block; margin-bottom: 4px;">🔥 Popüler Kısayollar:</span>
+      <span class="tag" onclick="selectCoin('bitcoin', 'Bitcoin', 'BTC')">BTC</span>
+      <span class="tag" onclick="selectCoin('ethereum', 'Ethereum', 'ETH')">ETH</span>
+      <span class="tag" onclick="selectCoin('solana', 'Solana', 'SOL')">SOL</span>
+      <span class="tag" onclick="selectCoin('ripple', 'Ripple', 'XRP')">XRP</span>
+      <span class="tag" onclick="selectCoin('avalanche-2', 'Avalanche', 'AVAX')">AVAX</span>
+      <span class="tag" onclick="selectCoin('cardano', 'Cardano', 'ADA')">ADA</span>
+    </div>
+  </div>
+
+  <!-- PİYASA TREND LİSTESİ -->
+  <div class="card">
+    <h3 style="font-size: 16px; margin-bottom: 8px;">🚀 Piyasa Trendleri (Canlı)</h3>
+    <div class="trend-grid" id="trendContainer">
+      <div style="font-size: 13px; color: var(--text2);">Trend verileri yükleniyor...</div>
+    </div>
+  </div>
+
+  <!-- İSTATİSTİK KARTLARI -->
+  <div class="card grid">
+    <div id="priceCardBox">
+      <div style="color: var(--text2); font-size: 13px;">💰 Güncel Fiyat (Canlı)</div>
+      <div class="stat-value" id="price">-</div>
+      <span id="change" style="font-weight: 600; font-size: 13px;"></span>
+    </div>
+    <div>
+      <div style="color: var(--text2); font-size: 13px;">📈 24s Değişim</div>
+      <div class="stat-value" id="changeStat">-</div>
+    </div>
+    <div>
+      <div style="color: var(--text2); font-size: 13px;">📊 24s İşlem Hacmi</div>
+      <div class="stat-value" id="volume">-</div>
+    </div>
+    <div>
+      <div style="color: var(--text2); font-size: 13px;">🏦 Piyasa Değeri</div>
+      <div class="stat-value" id="marketCap">-</div>
+    </div>
+  </div>
+
+  <!-- GRAFİK VE ZAMAN ARALIĞI SEÇENEKLERİ -->
+  <div class="card">
+    <div class="flex-header" style="margin-bottom: 15px;">
+      <h3>📈 Fiyat Grafiği</h3>
+      <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+        <button class="btn btn-outline" style="padding: 4px 10px; font-size: 12px;" onclick="changeChartDays(1)">24 Saat</button>
+        <button class="btn" style="padding: 4px 10px; font-size: 12px;" onclick="changeChartDays(7)">7 Gün</button>
+        <button class="btn btn-outline" style="padding: 4px 10px; font-size: 12px;" onclick="changeChartDays(30)">30 Gün</button>
+        <button class="btn btn-outline" style="padding: 4px 10px; font-size: 12px;" onclick="changeChartDays(90)">3 Ay</button>
+        <button class="btn btn-outline" style="padding: 4px 10px; font-size: 12px;" onclick="changeChartDays(180)">6 Ay</button>
+      </div>
+    </div>
+    <div class="chart-wrap">
+      <canvas id="priceChart"></canvas>
+    </div>
+  </div>
+
+  <!-- 🧮 KRİPTO KÂR / ZARAR HESAPLAMA ARACI -->
+  <div class="card">
+    <h3 style="font-size: 16px; margin-bottom: 12px;">🧮 Kâr / Zarar Hesaplama Aracı</h3>
+    <div class="grid" style="align-items: center;">
+      <div>
+        <label style="font-size:12px; color:var(--text2);">Yatırım Tutarı ($)</label>
+        <input type="number" id="calcInvested" placeholder="Örn: 1000" value="1000" oninput="calculateProfitLoss()">
+      </div>
+      <div>
+        <label style="font-size:12px; color:var(--text2);">Alış Fiyatı ($)</label>
+        <input type="number" id="calcBuyPrice" placeholder="Örn: 60000" oninput="calculateProfitLoss()">
+      </div>
+      <div>
+        <label style="font-size:12px; color:var(--text2);">Hedef / Satış Fiyatı ($)</label>
+        <input type="number" id="calcTargetPrice" placeholder="Örn: 75000" oninput="calculateProfitLoss()">
+      </div>
+    </div>
+    <div id="calcResultBox" style="margin-top: 15px; padding: 12px; background: rgba(99,102,241,0.05); border-radius: 10px; font-weight: 600; display: none;">
+      Tahmini Durum: <span id="calcResultText"></span>
+    </div>
+  </div>
+
+  <!-- PORTFÖY / CÜZDAN SİMÜLATÖRÜ -->
+  <div class="card">
+    <h3 style="font-size: 16px; margin-bottom: 12px;">💼 Portföy / Cüzdan Simülatörü</h3>
+    <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 15px;">
+      <input type="number" id="portfolioAmount" placeholder="Miktar (Örn: 0.5 adet)" style="max-width: 200px;">
+      <input type="number" id="portfolioBuyPrice" placeholder="Alış Maliyeti ($)" style="max-width: 200px;">
+      <button class="btn btn-success" onclick="addPortfolioItem('BUY')">Alış Ekle</button>
+      <button class="btn btn-danger" onclick="addPortfolioItem('SELL')">Satış Ekle</button>
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th>Varlık</th>
+          <th>Miktar</th>
+          <th>Maliyet</th>
+          <th>Güncel Değer</th>
+          <th>Kâr / Zarar</th>
+          <th>İşlem</th>
+        </tr>
+      </thead>
+      <tbody id="portfolioTableBody">
+        <tr><td colspan="6" style="text-align: center; color: var(--text2);">Cüzdanınızda varlık bulunmuyor.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 📋 İŞLEM GEÇMİŞİ / ALIM-SATIM DEFTERİ (TRADE HISTORY) -->
+  <div class="card">
+    <div class="flex-header" style="margin-bottom: 10px;">
+      <h3 style="font-size: 16px;">📋 İşlem Geçmişi (Trade History)</h3>
+      <button class="btn btn-outline" style="padding: 4px 10px; font-size: 11px;" onclick="clearHistory()">Geçmişi Temizle</button>
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th>Tarih</th>
+          <th>İşlem Türü</th>
+          <th>Varlık</th>
+          <th>Miktar</th>
+          <th>Fiyat</th>
+          <th>Toplam Tutar</th>
+        </tr>
+      </thead>
+      <tbody id="historyTableBody">
+        <tr><td colspan="6" style="text-align: center; color: var(--text2);">Henüz işlem geçmişi bulunmuyor.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- CANLI ALARM PANELİ -->
+  <div class="card">
+    <h3 style="font-size: 16px; margin-bottom: 10px;">🔔 Fiyat Alarmı Kur</h3>
+    <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
+      <input type="number" id="alertPriceInput" placeholder="Hedef fiyat girin..." style="max-width: 250px;">
+      <button class="btn" onclick="setPriceAlert()">Alarmı Kur</button>
+      <span id="activeAlertText" style="font-size: 13px; color: var(--text2);">Aktif alarm yok.</span>
+      <button class="btn btn-danger" id="cancelAlertBtn" style="display:none;" onclick="cancelAlert()">İptal Et</button>
+    </div>
+  </div>
+
+  <!-- AI ANALİZ PANELİ -->
+  <div class="card">
+    <div class="flex-header">
+      <h3>🤖 Groq Yapay Zeka Piyasa Analizi</h3>
+      <button class="btn" id="analyzeBtn" onclick="getAIAnalysis()">🧠 AI Analiz Oluştur</button>
+    </div>
+    <div id="aiLoader" style="display: none; margin-top: 12px; color: var(--text2);"><span class="spinner"></span> Yapay zeka piyasayı yorumluyor...</div>
+    <div id="aiBox" class="ai-box"></div>
+  </div>
+</div>
+
+<script>
+  let currentCoinId = 'bitcoin';
+  let currentCoinName = 'Bitcoin';
+  let currentSymbol = 'BTC';
+  let currentCurrency = 'usd';
+  let currentPriceValue = 0;
+  let previousPriceValue = 0;
+  let targetAlertPrice = null;
+  let currentChartDays = 7;
+
+  let favorites = JSON.parse(localStorage.getItem('crypto_favs') || '[]');
+  let portfolio = JSON.parse(localStorage.getItem('crypto_portfolio') || '[]');
+  let tradeHistory = JSON.parse(localStorage.getItem('crypto_history') || '[]');
+
+  function log(msg, type = 'info') {
+    const el = document.getElementById('debug');
+    const textEl = document.getElementById('debugText');
+    const retryBtn = document.getElementById('retryBtn');
+    if (!el || !textEl) return;
+    textEl.textContent = msg;
+    el.className = '';
+    if (type === 'error') { el.className = 'error'; retryBtn.style.display = 'inline-block'; }
+    else if (type === 'success') { el.className = 'success'; retryBtn.style.display = 'none'; }
+    else { retryBtn.style.display = 'none'; }
+  }
+
+  function toggleTheme() { document.body.classList.toggle('dark'); }
+  function changeCurrency() {
+    currentCurrency = document.getElementById('currencySelect').value;
+    selectCoin(currentCoinId, currentCoinName, currentSymbol);
+    loadTrendingCoins();
+  }
+
+  function renderFavorites() {
+    const container = document.getElementById('favoritesContainer');
+    if (favorites.length === 0) {
+      container.innerHTML = '<span style="font-size: 13px; color: var(--text2);">Henüz favori eklenmedi.</span>';
+      return;
+    }
+    let html = '';
+    favorites.forEach(fav => {
+      html += `<span class="tag fav-tag" onclick="selectCoin('${fav.id}', '${fav.name}', '${fav.symbol}')">⭐ ${fav.symbol.toUpperCase()}</span>`;
+    });
+    container.innerHTML = html;
+  }
+
+  function toggleFavorite() {
+    const index = favorites.findIndex(f => f.id === currentCoinId);
+    if (index > -1) favorites.splice(index, 1);
+    else favorites.push({ id: currentCoinId, name: currentCoinName, symbol: currentSymbol });
+    localStorage.setItem('crypto_favs', JSON.stringify(favorites));
+    updateStarUI();
+    renderFavorites();
+  }
+
+  function updateStarUI() {
+    const star = document.getElementById('favStar');
+    const isFav = favorites.some(f => f.id === currentCoinId);
+    star.textContent = isFav ? '★' : '☆';
+    star.style.color = isFav ? 'var(--warning)' : 'inherit';
+  }
+
+  function fetchApi(endpoint, params, callback) {
+    const targetUrl = `/api/proxy?endpoint=${encodeURIComponent(endpoint)}&params=${encodeURIComponent(params || '')}`;
+    fetch(targetUrl)
+      .then(res => { if (!res.ok) throw new Error('HTTP ' + res.status); return res.json(); })
+      .then(data => { if (data && data.error) throw new Error(data.error); callback(data); })
+      .catch(err => { log('⚠️ Bağlantı hatası: ' + err.message, 'error'); });
+  }
+
+  let priceChartInstance = null;
+  function drawChart(prices) {
+    const canvas = document.getElementById('priceChart');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (priceChartInstance) priceChartInstance.destroy();
+    
+    const labels = prices.map((_, i) => i + 1);
+    priceChartInstance = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: labels,
+        datasets: [{
+          label: 'Fiyat',
+          data: prices,
+          borderColor: '#6366f1',
+          backgroundColor: 'rgba(99, 102, 241, 0.08)',
+          fill: true,
+          tension: 0.3,
+          borderWidth: 2
+        }]
+      },
+      options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+    });
+  }
+
+  function changeChartDays(days) {
+    currentChartDays = days;
+    fetchApi(`coins/${currentCoinId}/market_chart`, `vs_currency=${currentCurrency}&days=${days}`, data => {
+      if (data && data.prices) drawChart(data.prices.map(p => p[1]));
+    });
+  }
+
+  function selectCoin(coinId, coinName, symbol) {
+    currentCoinId = coinId;
+    currentCoinName = coinName;
+    currentSymbol = symbol || 'COIN';
+    document.getElementById('coinNameDisplay').textContent = `${coinName} (${currentSymbol.toUpperCase()})`;
+    document.getElementById('aiBox').style.display = 'none';
+    updateStarUI();
+    log(`⏳ ${coinName} verileri yükleniyor...`, 'info');
+    
+    const curr = currentCurrency;
+    const symbolMap = { usd: '$', try: '₺', eur: '€' };
+    const prefix = symbolMap[curr] || '$';
+
+    fetchApi('simple/price', `ids=${coinId}&vs_currencies=${curr}&include_market_cap=true&include_24hr_vol=true&include_24hr_change=true`, data => {
+      if (data && data[coinId]) {
+        const res = data[coinId];
+        previousPriceValue = currentPriceValue;
+        currentPriceValue = res[curr];
+        
+        const priceEl = document.getElementById('price');
+        priceEl.textContent = prefix + currentPriceValue.toLocaleString();
+        
+        const cardBox = document.getElementById('priceCardBox');
+        if (previousPriceValue > 0) {
+          if (currentPriceValue > previousPriceValue) {
+            cardBox.classList.add('flash-green');
+            setTimeout(() => cardBox.classList.remove('flash-green'), 800);
+          } else if (currentPriceValue < previousPriceValue) {
+            cardBox.classList.add('flash-red');
+            setTimeout(() => cardBox.classList.remove('flash-red'), 800);
+          }
+        }
+
+        const ch = res[curr + '_24h_change'] || 0;
+        const chEl = document.getElementById('change');
+        chEl.textContent = (ch >= 0 ? '+' : '') + ch.toFixed(2) + '%';
+        chEl.className = ch >= 0 ? 'positive' : 'negative';
+        
+        document.getElementById('changeStat').textContent = (ch >= 0 ? '+' : '') + ch.toFixed(2) + '%';
+        document.getElementById('changeStat').className = 'stat-value ' + (ch >= 0 ? 'positive' : 'negative');
+        document.getElementById('volume').textContent = prefix + ((res[curr + '_24h_vol'] || 0) / 1e9).toFixed(2) + 'B';
+        document.getElementById('marketCap').textContent = prefix + ((res[curr + '_market_cap'] || 0) / 1e9).toFixed(2) + 'B';
+        
+        // Hesap makinesine otomatik güncel fiyatı doldur
+        document.getElementById('calcBuyPrice').value = currentPriceValue;
+        calculateProfitLoss();
+
+        log(`✅ ${coinName} başarıyla güncellendi.`, 'success');
+      }
+    });
+
+    fetchApi(`coins/${coinId}/market_chart`, `vs_currency=${curr}&days=${currentChartDays}`, data => {
+      if (data && data.prices) drawChart(data.prices.map(p => p[1]));
+    });
+  }
+
+  // Canlı Otomatik Fiyat Güncelleme
+  setInterval(() => {
+    if (currentCoinId) {
+      const curr = currentCurrency;
+      fetchApi('simple/price', `ids=${currentCoinId}&vs_currencies=${curr}`, data => {
+        if (data && data[currentCoinId]) {
+          previousPriceValue = currentPriceValue;
+          currentPriceValue = data[currentCoinId][curr];
+          const symbolMap = { usd: '$', try: '₺', eur: '€' };
+          const prefix = symbolMap[curr] || '$';
+          
+          const priceEl = document.getElementById('price');
+          if(priceEl) priceEl.textContent = prefix + currentPriceValue.toLocaleString();
+
+          const cardBox = document.getElementById('priceCardBox');
+          if (previousPriceValue > 0 && cardBox) {
+            if (currentPriceValue > previousPriceValue) {
+              cardBox.classList.add('flash-green');
+              setTimeout(() => cardBox.classList.remove('flash-green'), 800);
+            } else if (currentPriceValue < previousPriceValue) {
+              cardBox.classList.add('flash-red');
+              setTimeout(() => cardBox.classList.remove('flash-red'), 800);
+            }
+          }
+        }
+      });
+    }
+  }, 10000);
+
+  // Kâr / Zarar Hesaplama Fonksiyonu
+  function calculateProfitLoss() {
+    const invested = parseFloat(document.getElementById('calcInvested').value);
+    const buyPrice = parseFloat(document.getElementById('calcBuyPrice').value);
+    const targetPrice = parseFloat(document.getElementById('calcTargetPrice').value);
+    const resultBox = document.getElementById('calcResultBox');
+    const resultText = document.getElementById('calcResultText');
+
+    if (!invested || !buyPrice || !targetPrice || buyPrice <= 0) {
+      resultBox.style.display = 'none';
+      return;
+    }
+
+    const coinAmount = invested / buyPrice;
+    const finalValue = coinAmount * targetPrice;
+    const profitLoss = finalValue - invested;
+    const percentage = (profitLoss / invested) * 100;
+    const plClass = profitLoss >= 0 ? 'positive' : 'negative';
+
+    resultText.innerHTML = `<span class="${plClass}">${profitLoss >= 0 ? '+' : ''}$${profitLoss.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})} (${percentage.toFixed(2)}%)</span> | Toplam Değer: $${finalValue.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+    resultBox.style.display = 'block';
+  }
+
+  // Fear & Greed Index Çekme
+  function loadFearAndGreed() {
+    fetch('https://api.alternative.me/fng/')
+      .then(res => res.json())
+      .then(data => {
+        if (data && data.data && data.data[0]) {
+          const item = data.data[0];
+          document.getElementById('fearGreedVal').textContent = item.value + ' / 100';
+          document.getElementById('fearGreedText').textContent = item.value_classification;
+        }
+      }).catch(() => {});
+  }
+
+  // Piyasa Trendleri
+  function loadTrendingCoins() {
+    fetchApi('search/trending', '', data => {
+      if (data && data.coins) {
+        const container = document.getElementById('trendContainer');
+        let html = '';
+        data.coins.slice(0, 6).forEach(item => {
+          const c = item.item;
+          html += `
+            <div class="trend-item" onclick="selectCoin('${c.id}', '${c.name}', '${c.symbol}')">
+              <div style="display:flex; align-items:center; gap:8px;">
+                <img src="${c.small}" width="22" height="22" style="border-radius:50%;">
+                <div><strong>${c.name}</strong> <span style="color:var(--text2); font-size:12px;">(${c.symbol.toUpperCase()})</span></div>
+              </div>
+              <div style="font-weight:600; font-size:13px; color:var(--primary);">Sıra #${c.market_cap_rank || '-'}</div>
+            </div>
+          `;
+        });
+        container.innerHTML = html;
+      }
+    });
+  }
+
+  // Portföy & İşlem Geçmişi Fonksiyonları
+  function addPortfolioItem(type) {
+    const amount = parseFloat(document.getElementById('portfolioAmount').value);
+    const buyPrice = parseFloat(document.getElementById('portfolioBuyPrice').value);
+    if (!amount || !buyPrice || isNaN(amount) || isNaN(buyPrice)) {
+      alert('Lütfen geçerli miktar ve fiyat girin.');
+      return;
+    }
+
+    // Portföye ekle
+    portfolio.push({
+      id: currentCoinId,
+      name: currentCoinName,
+      symbol: currentSymbol,
+      amount: amount,
+      buyPrice: buyPrice
+    });
+    localStorage.setItem('crypto_portfolio', JSON.stringify(portfolio));
+
+    // İşlem Geçmişine (Trade History) Ekle
+    const now = new Date().toLocaleString('tr-TR');
+    tradeHistory.unshift({
+      date: now,
+      type: type === 'BUY' ? 'ALIŞ' : 'SATIŞ',
+      name: currentCoinName,
+      symbol: currentSymbol,
+      amount: amount,
+      price: buyPrice,
+      total: amount * buyPrice
+    });
+    localStorage.setItem('crypto_history', JSON.stringify(tradeHistory));
+
+    document.getElementById('portfolioAmount').value = '';
+    document.getElementById('portfolioBuyPrice').value = '';
+    renderPortfolio();
+    renderHistory();
+  }
+
+  function removePortfolioItem(index) {
+    portfolio.splice(index, 1);
+    localStorage.setItem('crypto_portfolio', JSON.stringify(portfolio));
+    renderPortfolio();
+  }
+
+  function clearHistory() {
+    tradeHistory = [];
+    localStorage.removeItem('crypto_history');
+    renderHistory();
+  }
+
+  function renderPortfolio() {
+    const tbody = document.getElementById('portfolioTableBody');
+    if (portfolio.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: var(--text2);">Cüzdanınızda varlık bulunmuyor.</td></tr>';
+      return;
+    }
+    let html = '';
+    portfolio.forEach((item, idx) => {
+      const currentVal = (item.id === currentCoinId && currentPriceValue > 0) ? currentPriceValue : item.buyPrice;
+      const totalVal = currentVal * item.amount;
+      const totalCost = item.buyPrice * item.amount;
+      const profitLoss = totalVal - totalCost;
+      const plClass = profitLoss >= 0 ? 'positive' : 'negative';
+
+      html += `
+        <tr>
+          <td><strong>${item.name}</strong> (${item.symbol.toUpperCase()})</td>
+          <td>${item.amount}</td>
+          <td>$${item.buyPrice.toLocaleString()}</td>
+          <td>$${totalVal.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+          <td class="${plClass}">${profitLoss >= 0 ? '+' : ''}$${profitLoss.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+          <td><button class="btn btn-danger" style="padding: 4px 8px; font-size: 11px;" onclick="removePortfolioItem(${idx})">Sil</button></td>
+        </tr>
+      `;
+    });
+    tbody.innerHTML = html;
+  }
+
+  function renderHistory() {
+    const tbody = document.getElementById('historyTableBody');
+    if (tradeHistory.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: var(--text2);">Henüz işlem geçmişi bulunmuyor.</td></tr>';
+      return;
+    }
+    let html = '';
+    tradeHistory.forEach(item => {
+      const typeColor = item.type === 'ALIŞ' ? 'positive' : 'negative';
+      html += `
+        <tr>
+          <td>${item.date}</td>
+          <td><strong class="${typeColor}">${item.type}</strong></td>
+          <td>${item.name} (${item.symbol.toUpperCase()})</td>
+          <td>${item.amount}</td>
+          <td>$${item.price.toLocaleString()}</td>
+          <td>$${item.total.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+        </tr>
+      `;
+    });
+    tbody.innerHTML = html;
+  }
+
+  // Arama Mekanizması
+  const searchInput = document.getElementById('coinSearch');
+  const searchResults = document.getElementById('searchResults');
+  let searchTimer;
+
+  searchInput.addEventListener('input', function() {
+    clearTimeout(searchTimer);
+    const q = this.value.trim().toLowerCase();
+    if (q.length < 2) { searchResults.style.display = 'none'; return; }
+    searchTimer = setTimeout(() => {
+      fetchApi('search', `query=${encodeURIComponent(q)}`, data => {
+        if (data && data.coins && data.coins.length) {
+          let html = '';
+          data.coins.slice(0, 8).forEach(c => {
+            html += `<div class="search-item" onclick="chooseSearch('${c.id}', '${c.name}', '${c.symbol}')">
+              <span><strong>${c.symbol.toUpperCase()}</strong> - ${c.name}</span>
+              <span style="color:var(--text2); font-size:12px;">Seç &raquo;</span>
+            </div>`;
+          });
+          searchResults.innerHTML = html;
+          searchResults.style.display = 'block';
+        } else { searchResults.style.display = 'none'; }
+      });
+    }, 300);
+  });
+
+  function chooseSearch(id, name, symbol) {
+    searchInput.value = '';
+    searchResults.style.display = 'none';
+    selectCoin(id, name, symbol);
+  }
+
+  document.addEventListener('click', function(e) {
+    if (!searchInput.contains(e.target) && !searchResults.contains(e.target)) {
+      searchResults.style.display = 'none';
+    }
+  });
+
+  // Fiyat Alarmı
+  function setPriceAlert() {
+    const val = parseFloat(document.getElementById('alertPriceInput').value);
+    if (!val || isNaN(val)) { alert('Geçerli bir hedef fiyat girin.'); return; }
+    targetAlertPrice = val;
+    document.getElementById('activeAlertText').textContent = `Aktif Hedef: ${targetAlertPrice} (${currentSymbol.toUpperCase()})`;
+    document.getElementById('cancelAlertBtn').style.display = 'inline-block';
+    alert('Alarm kuruldu!');
+  }
+
+  function cancelAlert() {
+    targetAlertPrice = null;
+    document.getElementById('activeAlertText').textContent = 'Aktif alarm yok.';
+    document.getElementById('cancelAlertBtn').style.display = 'none';
+    document.getElementById('alertPriceInput').value = '';
+  }
+
+  setInterval(() => {
+    if (targetAlertPrice !== null && currentPriceValue > 0 && currentPriceValue >= targetAlertPrice) {
+      alert(`🔔 ALARM! ${currentCoinName} hedef fiyata ulaştı! Fiyat: ${currentPriceValue}`);
+      cancelAlert();
+    }
+  }, 10000);
+
+  // Yapay Zeka Analizi
+  function getAIAnalysis() {
+    const loader = document.getElementById('aiLoader');
+    const box = document.getElementById('aiBox');
+    const btn = document.getElementById('analyzeBtn');
+    loader.style.display = 'block';
+    box.style.display = 'none';
+    btn.disabled = true;
+
+    fetch('/api/groq', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ 
+        prompt: `${currentCoinName} (${currentCoinId}) kripto para birimi için son piyasa durumuna göre profesyonel bir teknik analiz yap, destek/direnç seviyelerini ve kısa vadeli beklentiyi Türkçe olarak maddeler halinde özetle.` 
+      })
+    })
+    .then(res => res.json())
+    .then(data => {
+      loader.style.display = 'none';
+      btn.disabled = false;
+      if (data.content) { box.textContent = data.content; box.style.display = 'block'; }
+      else { box.textContent = 'Analiz alınamadı: ' + (data.error || 'Groq API Key kontrol edin'); box.style.display = 'block'; }
+    })
+    .catch(() => { loader.style.display = 'none'; btn.disabled = false; alert('Sunucu bağlantı hatası.'); });
+  }
+
+  // İlk Açılış
+  renderFavorites();
+  renderPortfolio();
+  renderHistory();
+  loadTrendingCoins();
+  loadFearAndGreed();
+  selectCoin('bitcoin', 'Bitcoin', 'BTC');
+</script>
+</body>
+</html>
