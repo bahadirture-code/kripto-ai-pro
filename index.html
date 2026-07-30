@@ -225,23 +225,23 @@
   }
 
   // ========== DÜZELTİLEN fetchApi ==========
-    async function fetchApi(endpoint, params, callback) {
-    await throttle();
-    // 📌 params'ı encode ederek URL'e ekle
-    const url = `${BASE}/api/proxy?endpoint=${endpoint}&params=${encodeURIComponent(params || '')}`;
-    console.log(`[FetchApi] ${url}`);
-    try {
-      const res = await fetch(url);
-      if (!res.ok) throw new Error(`HTTP ${res.status} - ${res.statusText}`);
-      const data = await res.json();
-      if (data && data.error) throw new Error(data.error);
-      callback(data);
-      log(`✓ ${endpoint.split('/')[0]}`, 'success');
-    } catch (err) {
-      console.error('[FetchApi]', err);
-      log(`✗ ${endpoint}: ${err.message}`, 'error');
+    async function fetchApi(endpoint, params = '') {
+  try {
+    // encodeURIComponent ile parametre string'inin bozulmasını engelliyoruz
+    const url = `/api/proxy?endpoint=${endpoint}&params=${encodeURIComponent(params)}`;
+    console.log('[FetchApi]', url);
+    
+    const res = await fetch(url);
+    if (!res.ok) {
+      const errData = await res.json().catch(() => ({}));
+      throw new Error(`HTTP ${res.status} - ${errData.details || res.statusText}`);
     }
+    return await res.json();
+  } catch (err) {
+    console.error('[FetchApi Error]', err.message);
+    throw err;
   }
+}
 
   function log(msg, type) {
     const el = document.getElementById('debugText');
