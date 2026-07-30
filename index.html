@@ -225,10 +225,10 @@
   }
 
   // ========== DÜZELTİLEN fetchApi ==========
-  async function fetchApi(endpoint, params, callback) {
+    async function fetchApi(endpoint, params, callback) {
     await throttle();
-    // params'ı encode etmiyoruz, doğrudan gönderiyoruz!
-    const url = `${BASE}/api/proxy?endpoint=${endpoint}&params=${params || ''}`;
+    // 📌 params'ı encode ederek URL'e ekle
+    const url = `${BASE}/api/proxy?endpoint=${endpoint}&params=${encodeURIComponent(params || '')}`;
     console.log(`[FetchApi] ${url}`);
     try {
       const res = await fetch(url);

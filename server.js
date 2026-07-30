@@ -36,7 +36,7 @@ app.get('/', (req, res) => {
   }
 });
 
-// ========== 1. CoinGecko Proxy (DÜZELTİLDİ - decode kaldırıldı) ==========
+// ========== 1. CoinGecko Proxy ==========
 app.get('/api/proxy', async (req, res) => {
   try {
     const { endpoint = '', params = '' } = req.query;
@@ -50,7 +50,7 @@ app.get('/api/proxy', async (req, res) => {
       });
     }
 
-    // 🟢 DÜZELTME: params'ı decode ETME, doğrudan kullan!
+    // 📌 params zaten decode edilmiş halde gelir, doğrudan kullan
     const url = `${COINGECKO_BASE}/${endpoint}${params ? '?' + params : ''}`;
     console.log(`[Proxy] ${url}`);
 
