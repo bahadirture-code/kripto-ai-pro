@@ -36,36 +36,36 @@ app.get('/', (req, res) => {
   }
 });
 
-// ========== 1. CoinGecko Proxy ==========
+// ========== 1. CoinGecko Proxy (Güncellendi - decode eklendi) ==========
 app.get('/api/proxy', async (req, res) => {
   try {
     const { endpoint = '', params = '' } = req.query;
     if (!endpoint) return res.status(400).json({ error: 'Endpoint zorunlu' });
 
     const apiKey = process.env.COINGECKO_API_KEY;
-    
-    // API Key parametre olarak veya header olarak eklenebilir
-    let url = `${COINGECKO_BASE}/${endpoint}${params ? '?' + params : ''}`;
-    
-    const headers = {
-      'Accept': 'application/json'
-    };
-
-    if (apiKey) {
-      headers['x-cg-demo-api-key'] = apiKey;
+    if (!apiKey) {
+      console.error('[Proxy] CoinGecko API anahtarı eksik!');
+      return res.status(500).json({
+        error: 'CoinGecko API anahtarı eksik. Render ortam değişkenine COINGECKO_API_KEY ekleyin.'
+      });
     }
 
+    // 📌 FRONTEND'DEN GELEN ENCODED PARAMS'I DECODE ET!
+    const decodedParams = decodeURIComponent(params);
+    const url = `${COINGECKO_BASE}/${endpoint}${decodedParams ? '?' + decodedParams : ''}`;
     console.log(`[Proxy] ${url}`);
 
     const response = await fetch(url, {
-      headers,
+      headers: {
+        'x-cg-demo-api-key': apiKey
+      },
       timeout: 15000
     });
 
     if (!response.ok) {
       const errorText = await response.text();
       console.error(`[Proxy Error] ${response.status}: ${errorText}`);
-      return res.status(response.status).json({ error: `CoinGecko: ${response.statusText}`, details: errorText });
+      return res.status(response.status).json({ error: `CoinGecko: ${response.statusText}` });
     }
 
     const data = await response.json();
