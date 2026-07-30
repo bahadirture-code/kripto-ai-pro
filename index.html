@@ -224,8 +224,10 @@
     lastFetchTime = Date.now();
   }
 
+  // ========== DÜZELTİLEN fetchApi ==========
   async function fetchApi(endpoint, params, callback) {
     await throttle();
+    // params'ı encode etmiyoruz, doğrudan gönderiyoruz!
     const url = `${BASE}/api/proxy?endpoint=${endpoint}&params=${params || ''}`;
     console.log(`[FetchApi] ${url}`);
     try {

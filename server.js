@@ -22,7 +22,7 @@ const FEAR_GREED_URL = 'https://api.alternative.me/fng/';
 const GROQ_API = 'https://api.groq.com/openai/v1/chat/completions';
 const BINANCE_BASE = 'https://api.binance.com';
 
-// ========== Kök Route (Esnek index.html Bulucu) ==========
+// ========== Kök Route ==========
 app.get('/', (req, res) => {
   const publicPath = path.join(__dirname, 'public', 'index.html');
   const rootPath = path.join(__dirname, 'index.html');
@@ -36,50 +36,41 @@ app.get('/', (req, res) => {
   }
 });
 
-// ========== 1. CoinGecko Proxy ==========
+// ========== 1. CoinGecko Proxy (DÜZELTİLDİ - decode kaldırıldı) ==========
 app.get('/api/proxy', async (req, res) => {
   try {
     const { endpoint = '', params = '' } = req.query;
     if (!endpoint) return res.status(400).json({ error: 'Endpoint zorunlu' });
 
-    const apiKey = process.env.COINGECKO_API_KEY ? process.env.COINGECKO_API_KEY.trim() : null;
-
-    // URL parametrelerini ayrıştır
-    const queryParams = new URLSearchParams(params);
-
-    // Eğer API Key varsa, hem header hem parametre çakışmasını önlemek için parametreye ekle
-    if (apiKey) {
-      queryParams.set('x_cg_demo_api_key', apiKey);
+    const apiKey = process.env.COINGECKO_API_KEY;
+    if (!apiKey) {
+      console.error('[Proxy] CoinGecko API anahtarı eksik!');
+      return res.status(500).json({
+        error: 'CoinGecko API anahtarı eksik. Render ortam değişkenine COINGECKO_API_KEY ekleyin.'
+      });
     }
 
-    const queryString = queryParams.toString();
-    const targetUrl = `${COINGECKO_BASE}/${endpoint}${queryString ? '?' + queryString : ''}`;
+    // 🟢 DÜZELTME: params'ı decode ETME, doğrudan kullan!
+    const url = `${COINGECKO_BASE}/${endpoint}${params ? '?' + params : ''}`;
+    console.log(`[Proxy] ${url}`);
 
-    console.log(`[Proxy Request] ${targetUrl}`);
-
-    const response = await fetch(targetUrl, {
-      method: 'GET',
+    const response = await fetch(url, {
       headers: {
-        'Accept': 'application/json',
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'
+        'x-cg-demo-api-key': apiKey
       },
       timeout: 15000
     });
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error(`[Proxy Error] Status: ${response.status} | Response: ${errorText}`);
-      return res.status(response.status).json({ 
-        error: `CoinGecko Hatasi: ${response.statusText}`, 
-        status: response.status,
-        details: errorText 
-      });
+      console.error(`[Proxy Error] ${response.status}: ${errorText}`);
+      return res.status(response.status).json({ error: `CoinGecko: ${response.statusText}` });
     }
 
     const data = await response.json();
     res.json(data);
   } catch (err) {
-    console.error('[Proxy Catch Error]', err.message);
+    console.error('[Proxy Error]', err.message);
     res.status(500).json({ error: err.message });
   }
 });
@@ -176,4 +167,10 @@ app.get('/api/health', (req, res) => {
 // ========== Sunucuyu Başlat ==========
 app.listen(PORT, () => {
   console.log(`🚀 Sunucu http://localhost:${PORT} uzerinde calisiyor`);
+  console.log(`📊 CoinGecko API: ${COINGECKO_BASE}`);
+  console.log(`📈 Binance API: ${BINANCE_BASE}`);
+  if (process.env.GROQ_API_KEY) console.log('✓ Groq API yapilandirildi');
+  else console.log('⚠️ Groq API yapilandirilmamis');
+  if (process.env.COINGECKO_API_KEY) console.log('✓ CoinGecko API yapilandirildi');
+  else console.log('⚠️ CoinGecko API anahtari eksik!');
 });
