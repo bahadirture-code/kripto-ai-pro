@@ -2,30 +2,41 @@ const express = require('express');
 const cors = require('cors');
 const fetch = require('node-fetch');
 const dotenv = require('dotenv');
-const path = require('path'); // Path modülü eklendi
+const path = require('path');
+const fs = require('fs');
 
 dotenv.config();
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 10000;
 
 app.use(cors());
 app.use(express.json());
 
-// 1. Statik klasör yolunu tam path olarak tanımla
+// Statik klasörleri sun
 app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(__dirname));
 
 const COINGECKO_BASE = 'https://api.coingecko.com/api/v3';
 const FEAR_GREED_URL = 'https://api.alternative.me/fng/';
 const GROQ_API = 'https://api.groq.com/openai/v1/chat/completions';
 const BINANCE_BASE = 'https://api.binance.com';
 
-// ========== 1. Kök Route (index.html Garantisi) ==========
+// ========== Kök Route (Esnek index.html Bulucu) ==========
 app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+  const publicPath = path.join(__dirname, 'public', 'index.html');
+  const rootPath = path.join(__dirname, 'index.html');
+
+  if (fs.existsSync(publicPath)) {
+    return res.sendFile(publicPath);
+  } else if (fs.existsSync(rootPath)) {
+    return res.sendFile(rootPath);
+  } else {
+    res.status(404).send('index.html dosyasi sunucuda bulunamadi! Lutfen Git deposunu kontrol edin.');
+  }
 });
 
-// ========== 2. CoinGecko Proxy ==========
+// ========== 1. CoinGecko Proxy ==========
 app.get('/api/proxy', async (req, res) => {
   try {
     const { endpoint = '', params = '' } = req.query;
@@ -33,9 +44,9 @@ app.get('/api/proxy', async (req, res) => {
 
     const apiKey = process.env.COINGECKO_API_KEY;
     if (!apiKey) {
-      console.error('[Proxy] CoinGecko API anahtarı eksik!');
+      console.error('[Proxy] CoinGecko API anahtari eksik!');
       return res.status(500).json({
-        error: 'CoinGecko API anahtarı eksik. Render ortam değişkenine COINGECKO_API_KEY ekleyin.'
+        error: 'CoinGecko API anahtari eksik. Render ortam degiskenine COINGECKO_API_KEY ekleyin.'
       });
     }
 
@@ -63,21 +74,21 @@ app.get('/api/proxy', async (req, res) => {
   }
 });
 
-// ========== 3. Binance ==========
+// ========== 2. Binance ==========
 app.get('/api/binance/ticker', async (req, res) => {
   try {
     const symbol = req.query.symbol;
     if (!symbol) {
-      return res.status(400).json({ error: 'symbol parametresi zorunlu (örn: BTCUSDT)' });
+      return res.status(400).json({ error: 'symbol parametresi zorunlu (orn: BTCUSDT)' });
     }
 
-    console.log(`[Binance] ${symbol} fiyatı isteniyor...`);
+    console.log(`[Binance] ${symbol} fiyati isteniyor...`);
     const resp = await fetch(`${BINANCE_BASE}/api/v3/ticker/24hr?symbol=${symbol}`, {
       timeout: 30000
     });
 
     if (!resp.ok) {
-      throw new Error(`Binance API Hatası: ${resp.status}`);
+      throw new Error(`Binance API Hatasi: ${resp.status}`);
     }
 
     const data = await resp.json();
@@ -88,7 +99,7 @@ app.get('/api/binance/ticker', async (req, res) => {
   }
 });
 
-// ========== 4. Fear & Greed ==========
+// ========== 3. Fear & Greed ==========
 app.get('/api/fear-greed', async (req, res) => {
   try {
     console.log('[Fear&Greed] Fetching...');
@@ -102,7 +113,7 @@ app.get('/api/fear-greed', async (req, res) => {
   }
 });
 
-// ========== 5. Groq AI ==========
+// ========== 4. Groq AI ==========
 app.post('/api/groq', async (req, res) => {
   try {
     const { prompt } = req.body;
@@ -110,9 +121,9 @@ app.post('/api/groq', async (req, res) => {
 
     const apiKey = process.env.GROQ_API_KEY;
     if (!apiKey) {
-      console.warn('[Groq] API anahtarı yok.');
+      console.warn('[Groq] API anahtari yok.');
       return res.json({
-        content: "⚠️ Groq API anahtarı yapılandırılmamış. Lütfen Render'a GROQ_API_KEY ekleyin."
+        content: "⚠️ Groq API anahtari yapilandirilmamis. Lutfen Render'a GROQ_API_KEY ekleyin."
       });
     }
 
@@ -139,7 +150,7 @@ app.post('/api/groq', async (req, res) => {
     }
 
     const data = await response.json();
-    const content = data.choices?.[0]?.message?.content || 'Cevap alınamadı';
+    const content = data.choices?.[0]?.message?.content || 'Cevap alinamadi';
     res.json({ content });
   } catch (err) {
     console.error('[Groq Error]', err.message);
@@ -147,12 +158,12 @@ app.post('/api/groq', async (req, res) => {
   }
 });
 
-// ========== 6. Health Check ==========
+// ========== 5. Health Check ==========
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
 // ========== Sunucuyu Başlat ==========
 app.listen(PORT, () => {
-  console.log(`🚀 Sunucu http://localhost:${PORT} üzerinde çalışıyor`);
+  console.log(`🚀 Sunucu http://localhost:${PORT} uzerinde calisiyor`);
 });
