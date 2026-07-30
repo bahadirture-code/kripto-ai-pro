@@ -1,18 +1,25 @@
 {
-  "name": "kripto-ai",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "name": "kripto-ai-pro",
+  "version": "7.0.0",
+  "description": "Kripto AI Pro - Cryptocurrency analysis dashboard",
+  "main": "server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node server.js"
+    "start": "node server.js",
+    "dev": "nodemon server.js"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "type": "commonjs",
   "dependencies": {
-    "express": "^5.2.1",
-    "node-fetch": "^3.3.2"
+    "express": "^4.18.2",
+    "cors": "^2.8.5",
+    "node-fetch": "^2.7.0",
+    "dotenv": "^16.4.5"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1",
+    "@capacitor/cli": "^7.2.2",
+    "@capacitor/core": "^7.2.2",
+    "@capacitor/android": "^7.2.2"
+  },
+  "engines": {
+    "node": "18.x"
   }
 }
