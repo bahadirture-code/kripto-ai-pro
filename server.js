@@ -43,27 +43,29 @@ app.get('/api/proxy', async (req, res) => {
     if (!endpoint) return res.status(400).json({ error: 'Endpoint zorunlu' });
 
     const apiKey = process.env.COINGECKO_API_KEY;
-    if (!apiKey) {
-      console.error('[Proxy] CoinGecko API anahtari eksik!');
-      return res.status(500).json({
-        error: 'CoinGecko API anahtari eksik. Render ortam degiskenine COINGECKO_API_KEY ekleyin.'
-      });
+    
+    // API Key parametre olarak veya header olarak eklenebilir
+    let url = `${COINGECKO_BASE}/${endpoint}${params ? '?' + params : ''}`;
+    
+    const headers = {
+      'Accept': 'application/json'
+    };
+
+    if (apiKey) {
+      headers['x-cg-demo-api-key'] = apiKey;
     }
 
-    const url = `${COINGECKO_BASE}/${endpoint}${params ? '?' + params : ''}`;
     console.log(`[Proxy] ${url}`);
 
     const response = await fetch(url, {
-      headers: {
-        'x-cg-demo-api-key': apiKey
-      },
+      headers,
       timeout: 15000
     });
 
     if (!response.ok) {
       const errorText = await response.text();
       console.error(`[Proxy Error] ${response.status}: ${errorText}`);
-      return res.status(response.status).json({ error: `CoinGecko: ${response.statusText}` });
+      return res.status(response.status).json({ error: `CoinGecko: ${response.statusText}`, details: errorText });
     }
 
     const data = await response.json();
