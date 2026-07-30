@@ -36,42 +36,50 @@ app.get('/', (req, res) => {
   }
 });
 
-// ========== 1. CoinGecko Proxy (Güncellendi - decode eklendi) ==========
+// ========== 1. CoinGecko Proxy ==========
 app.get('/api/proxy', async (req, res) => {
   try {
     const { endpoint = '', params = '' } = req.query;
     if (!endpoint) return res.status(400).json({ error: 'Endpoint zorunlu' });
 
-    const apiKey = process.env.COINGECKO_API_KEY;
-    if (!apiKey) {
-      console.error('[Proxy] CoinGecko API anahtarı eksik!');
-      return res.status(500).json({
-        error: 'CoinGecko API anahtarı eksik. Render ortam değişkenine COINGECKO_API_KEY ekleyin.'
-      });
+    const apiKey = process.env.COINGECKO_API_KEY ? process.env.COINGECKO_API_KEY.trim() : null;
+
+    // URL parametrelerini ayrıştır
+    const queryParams = new URLSearchParams(params);
+
+    // Eğer API Key varsa, hem header hem parametre çakışmasını önlemek için parametreye ekle
+    if (apiKey) {
+      queryParams.set('x_cg_demo_api_key', apiKey);
     }
 
-    // 📌 FRONTEND'DEN GELEN ENCODED PARAMS'I DECODE ET!
-    const decodedParams = decodeURIComponent(params);
-    const url = `${COINGECKO_BASE}/${endpoint}${decodedParams ? '?' + decodedParams : ''}`;
-    console.log(`[Proxy] ${url}`);
+    const queryString = queryParams.toString();
+    const targetUrl = `${COINGECKO_BASE}/${endpoint}${queryString ? '?' + queryString : ''}`;
 
-    const response = await fetch(url, {
+    console.log(`[Proxy Request] ${targetUrl}`);
+
+    const response = await fetch(targetUrl, {
+      method: 'GET',
       headers: {
-        'x-cg-demo-api-key': apiKey
+        'Accept': 'application/json',
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'
       },
       timeout: 15000
     });
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error(`[Proxy Error] ${response.status}: ${errorText}`);
-      return res.status(response.status).json({ error: `CoinGecko: ${response.statusText}` });
+      console.error(`[Proxy Error] Status: ${response.status} | Response: ${errorText}`);
+      return res.status(response.status).json({ 
+        error: `CoinGecko Hatasi: ${response.statusText}`, 
+        status: response.status,
+        details: errorText 
+      });
     }
 
     const data = await response.json();
     res.json(data);
   } catch (err) {
-    console.error('[Proxy Error]', err.message);
+    console.error('[Proxy Catch Error]', err.message);
     res.status(500).json({ error: err.message });
   }
 });
