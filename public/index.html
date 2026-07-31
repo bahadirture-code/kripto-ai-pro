@@ -16,33 +16,141 @@
       --bg: #0f172a; --card: #1e293b; --text: #f8fafc; --text2: #94a3b8;
       --border: #334155; --primary: #818cf8; --success: #34d399; --danger: #f87171; --warning: #fbbf24;
     }
-    body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); padding: 20px; display: flex; justify-content: center; min-height: 100vh; }
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      padding: 20px;
+      display: flex;
+      justify-content: center;
+      min-height: 100vh;
+      margin: 0;
+      transition: background-color 0.3s ease, color 0.3s ease;
+    }
     .container { max-width: 1300px; width: 100%; }
-    .card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 20px; margin-bottom: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.03); }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 20px;
+      margin-bottom: 16px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.03);
+      transition: background 0.3s ease, border 0.3s ease;
+    }
     .flex-header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
     .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
-    .btn { padding: 8px 16px; border-radius: 10px; border: none; font-weight: 700; cursor: pointer; background: var(--primary); color: #fff; font-size: 13px; }
+    .btn {
+      padding: 8px 16px;
+      border-radius: 10px;
+      border: none;
+      font-weight: 700;
+      cursor: pointer;
+      background: var(--primary);
+      color: #fff;
+      font-size: 13px;
+      transition: all 0.2s;
+    }
+    .btn:hover { opacity: 0.85; transform: scale(0.98); }
     .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text); }
     .btn-danger { background: var(--danger); color: #fff; }
     .btn-success { background: var(--success); color: #fff; }
-    input, select { padding: 10px 14px; border-radius: 10px; border: 1px solid var(--border); background: var(--card); color: var(--text); width: 100%; font-size: 14px; }
+    input, select {
+      padding: 10px 14px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: var(--card);
+      color: var(--text);
+      width: 100%;
+      font-size: 14px;
+      outline: none;
+      transition: border 0.3s ease;
+    }
+    input:focus, select:focus { border-color: var(--primary); }
     .stat-value { font-size: 24px; font-weight: 700; margin-top: 4px; }
     .positive { color: var(--success); }
     .negative { color: var(--danger); }
-    #debug { background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.3); padding: 12px 16px; border-radius: 10px; font-family: monospace; font-size: 13px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; }
+    .market-stat { font-size: 18px; font-weight: 600; }
+    .market-label { font-size: 12px; color: var(--text2); }
+
+    #debug {
+      background: rgba(245, 158, 11, 0.1);
+      border: 1px solid rgba(245, 158, 11, 0.3);
+      padding: 12px 16px;
+      border-radius: 10px;
+      font-family: monospace;
+      font-size: 13px;
+      margin-bottom: 15px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
     #debug.error { background: rgba(239, 68, 68, 0.1); border-color: rgba(239, 68, 68, 0.3); color: var(--danger); }
     #debug.success { background: rgba(16, 185, 129, 0.1); border-color: rgba(16, 185, 129, 0.3); color: var(--success); }
+
     .chart-wrap { height: 300px; width: 100%; position: relative; }
-    .search-results { position: absolute; background: var(--card); border: 1px solid var(--border); border-radius: 10px; max-height: 220px; overflow-y: auto; width: 100%; max-width: 450px; z-index: 100; display: none; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
+    .search-results {
+      position: absolute;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      max-height: 220px;
+      overflow-y: auto;
+      width: 100%;
+      max-width: 450px;
+      z-index: 100;
+      display: none;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    }
     .search-item { padding: 10px 14px; cursor: pointer; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; }
     .search-item:hover { background: rgba(99, 102, 241, 0.1); }
-    .tag { background: rgba(99, 102, 241, 0.1); color: var(--primary); padding: 6px 12px; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 600; display: inline-block; margin-right: 6px; margin-top: 6px; }
+    .tag {
+      background: rgba(99, 102, 241, 0.1);
+      color: var(--primary);
+      padding: 6px 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 600;
+      display: inline-block;
+      margin-right: 6px;
+      margin-top: 6px;
+      transition: all 0.2s;
+    }
+    .tag:hover { transform: translateY(-2px); box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
     .fav-tag { background: rgba(16, 185, 129, 0.1); color: var(--success); border: 1px solid rgba(16, 185, 129, 0.2); }
     .trend-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 15px; margin-top: 15px; }
-    .trend-item { display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; border-bottom: 1px solid var(--border); cursor: pointer; border-radius: 8px; }
+    .trend-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 12px;
+      border-bottom: 1px solid var(--border);
+      cursor: pointer;
+      border-radius: 8px;
+      transition: background 0.2s;
+    }
     .trend-item:hover { background: rgba(99, 102, 241, 0.05); }
-    .ai-box { background: rgba(99, 102, 241, 0.05); border-left: 4px solid var(--primary); padding: 16px; border-radius: 0 12px 12px 0; margin-top: 12px; white-space: pre-wrap; line-height: 1.6; display: none; }
-    .spinner { display: inline-block; width: 18px; height: 18px; border: 3px solid rgba(255,255,255,.3); border-radius: 50%; border-top-color: #fff; animation: spin 0.8s linear infinite; vertical-align: middle; margin-right: 6px; }
+    .ai-box {
+      background: rgba(99, 102, 241, 0.05);
+      border-left: 4px solid var(--primary);
+      padding: 16px;
+      border-radius: 0 12px 12px 0;
+      margin-top: 12px;
+      white-space: pre-wrap;
+      line-height: 1.6;
+      display: none;
+    }
+    .spinner {
+      display: inline-block;
+      width: 18px;
+      height: 18px;
+      border: 3px solid rgba(255,255,255,.3);
+      border-radius: 50%;
+      border-top-color: #fff;
+      animation: spin 0.8s linear infinite;
+      vertical-align: middle;
+      margin-right: 6px;
+    }
     @keyframes spin { to { transform: rotate(360deg); } }
     table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 14px; }
     th, td { padding: 10px; text-align: left; border-bottom: 1px solid var(--border); }
@@ -53,6 +161,70 @@
     h4 { font-size: 14px; }
     .btn-active { background: var(--primary) !important; color: #fff !important; border-color: var(--primary) !important; }
     .btn-inactive { background: transparent !important; color: var(--text) !important; border: 1px solid var(--border) !important; }
+
+    /* TOAST */
+    .toast-container {
+      position: fixed;
+      bottom: 30px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 9999;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      max-width: 90%;
+      pointer-events: none;
+    }
+    .toast {
+      background: var(--card);
+      color: var(--text);
+      padding: 14px 24px;
+      border-radius: 14px;
+      box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+      border-left: 6px solid var(--primary);
+      font-weight: 600;
+      font-size: 14px;
+      min-width: 200px;
+      text-align: center;
+      pointer-events: auto;
+      animation: slideUp 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+      backdrop-filter: blur(10px);
+      background: rgba(255,255,255,0.9);
+      border: 1px solid var(--border);
+    }
+    body.dark .toast { background: rgba(30, 41, 59, 0.95); }
+    .toast.success { border-left-color: var(--success); }
+    .toast.error { border-left-color: var(--danger); }
+    .toast.warning { border-left-color: var(--warning); }
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(30px) scale(0.9); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    .toast.hide { animation: slideDown 0.3s ease forwards; }
+    @keyframes slideDown {
+      to { opacity: 0; transform: translateY(30px) scale(0.9); }
+    }
+
+    /* SKELETON */
+    .skeleton-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 15px;
+      margin-top: 15px;
+    }
+    .skeleton-item {
+      background: var(--border);
+      height: 50px;
+      border-radius: 10px;
+      background: linear-gradient(90deg, var(--border) 25%, var(--card) 50%, var(--border) 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.5s infinite;
+    }
+    @keyframes shimmer {
+      0% { background-position: -200% 0; }
+      100% { background-position: 200% 0; }
+    }
   </style>
 </head>
 <body>
@@ -62,9 +234,11 @@
     <span id="retryBtn" style="display:none; cursor:pointer; text-decoration:underline; font-weight:bold;" onclick="location.reload()">Yeniden Dene</span>
   </div>
 
+  <div id="toastContainer" class="toast-container"></div>
+
   <div class="card flex-header">
     <div>
-      <h1>📊 Kripto AI Pro <span style="font-size: 12px; background: var(--primary); color: #fff; padding: 2px 8px; border-radius: 20px;">v7.0</span></h1>
+      <h1>📊 Kripto AI Pro <span style="font-size: 12px; background: var(--primary); color: #fff; padding: 2px 8px; border-radius: 20px;">v8.2</span></h1>
       <p style="color: var(--text2); margin-top: 4px;" id="active-coin-line">Aktif: <strong style="color: var(--primary);">Bitcoin (BTC)</strong></p>
     </div>
     <div style="display: flex; gap: 10px; align-items: center;">
@@ -78,6 +252,7 @@
     </div>
   </div>
 
+  <!-- FEAR & GREED -->
   <div class="card" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
     <div>
       <h4 style="color: var(--text2);">😱 Korku ve Açgözlülük Endeksi</h4>
@@ -86,6 +261,18 @@
     <div style="background: rgba(99,102,241,0.1); padding: 8px 16px; border-radius: 12px; font-weight: 600; color: var(--primary);" id="fearGreedVal">-</div>
   </div>
 
+  <!-- PİYASA ÖZETİ -->
+  <div class="card">
+    <h3>🌍 Piyasa Özeti</h3>
+    <div class="grid" id="marketOverview">
+      <div><div class="market-label">💰 Toplam Piyasa Değeri</div><div class="market-stat" id="totalMarketCap">-</div></div>
+      <div><div class="market-label">📊 24s İşlem Hacmi</div><div class="market-stat" id="totalVolume">-</div></div>
+      <div><div class="market-label">₿ BTC Dominasyonu</div><div class="market-stat" id="btcDominance">-</div></div>
+      <div><div class="market-label">🪙 Aktif Coin</div><div class="market-stat" id="activeCoins">-</div></div>
+    </div>
+  </div>
+
+  <!-- ARAMA & FAVORİLER -->
   <div class="card" style="position: relative;">
     <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 12px;">
       <div style="position: relative; flex: 1; min-width: 280px; max-width: 450px;">
@@ -107,6 +294,7 @@
     </div>
   </div>
 
+  <!-- TRENDLER -->
   <div class="card">
     <h3>🚀 Piyasa Trendleri</h3>
     <div class="trend-grid" id="trendContainer">
@@ -114,6 +302,7 @@
     </div>
   </div>
 
+  <!-- FİYAT KARTI -->
   <div class="card grid">
     <div>
       <div style="color: var(--text2); font-size: 13px;">💰 Fiyat</div>
@@ -134,6 +323,7 @@
     </div>
   </div>
 
+  <!-- GRAFİK -->
   <div class="card">
     <div class="flex-header" style="margin-bottom: 15px;">
       <h3>📈 Fiyat Grafiği</h3>
@@ -150,6 +340,7 @@
     </div>
   </div>
 
+  <!-- KAR/ZARAR -->
   <div class="card">
     <h3>🧮 Kâr/Zarar Hesaplama</h3>
     <div class="grid" style="align-items: center;">
@@ -171,6 +362,7 @@
     </div>
   </div>
 
+  <!-- PORTFÖY -->
   <div class="card">
     <h3>💼 Portföy</h3>
     <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 15px;">
@@ -186,6 +378,7 @@
     </table>
   </div>
 
+  <!-- AI ANALİZ -->
   <div class="card">
     <div class="flex-header">
       <h3>🤖 AI Analiz</h3>
@@ -197,7 +390,40 @@
 </div>
 
 <script>
-  // ========== BASE URL ==========
+  // ================================================================
+  // TOAST
+  // ================================================================
+  function showToast(message, type = 'info', duration = 3000) {
+    const container = document.getElementById('toastContainer');
+    if (!container) return;
+    const toast = document.createElement('div');
+    toast.className = `toast ${type}`;
+    toast.textContent = message;
+    container.appendChild(toast);
+    setTimeout(() => {
+      toast.classList.add('hide');
+      setTimeout(() => {
+        if (toast.parentNode) toast.parentNode.removeChild(toast);
+      }, 300);
+    }, duration);
+  }
+
+  // ================================================================
+  // SKELETON
+  // ================================================================
+  function showSkeleton(count = 6) {
+    const container = document.getElementById('trendContainer');
+    let html = '<div class="skeleton-grid">';
+    for (let i = 0; i < count; i++) {
+      html += `<div class="skeleton-item"></div>`;
+    }
+    html += '</div>';
+    container.innerHTML = html;
+  }
+
+  // ================================================================
+  // ANA UYGULAMA
+  // ================================================================
   const BASE = 'https://kripto-ai-pro.onrender.com';
 
   let currentCoinId = 'bitcoin', currentCoinName = 'Bitcoin', currentSymbol = 'BTC';
@@ -217,6 +443,14 @@
     return prefix + price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   }
 
+  function formatBigNumber(num) {
+    if (!num) return '-';
+    if (num >= 1e12) return '$' + (num / 1e12).toFixed(2) + 'T';
+    if (num >= 1e9) return '$' + (num / 1e9).toFixed(2) + 'B';
+    if (num >= 1e6) return '$' + (num / 1e6).toFixed(2) + 'M';
+    return '$' + num.toFixed(2);
+  }
+
   async function throttle() {
     const now = Date.now();
     const elapsed = now - lastFetchTime;
@@ -224,15 +458,13 @@
     lastFetchTime = Date.now();
   }
 
-  // ========== DÜZELTİLEN fetchApi ==========
-    async function fetchApi(endpoint, params, callback) {
+  async function fetchApi(endpoint, params, callback) {
     await throttle();
-    // 📌 params'ı encode ederek URL'e ekle
     const url = `${BASE}/api/proxy?endpoint=${endpoint}&params=${encodeURIComponent(params || '')}`;
     console.log(`[FetchApi] ${url}`);
     try {
       const res = await fetch(url);
-      if (!res.ok) throw new Error(`HTTP ${res.status} - ${res.statusText}`);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
       if (data && data.error) throw new Error(data.error);
       callback(data);
@@ -240,6 +472,7 @@
     } catch (err) {
       console.error('[FetchApi]', err);
       log(`✗ ${endpoint}: ${err.message}`, 'error');
+      showToast(`Veri yüklenemedi: ${err.message}`, 'error');
     }
   }
 
@@ -268,6 +501,7 @@
     selectCoin(currentCoinId, currentCoinName, currentSymbol);
   }
 
+  // FAVORİLER
   function renderFavorites() {
     const container = document.getElementById('favoritesContainer');
     if (favorites.length === 0) {
@@ -281,13 +515,19 @@
 
   function toggleFavorite(id, name, symbol) {
     const index = favorites.findIndex(f => f.id === id);
-    if (index > -1) favorites.splice(index, 1);
-    else favorites.push({ id, name, symbol });
+    if (index > -1) {
+      favorites.splice(index, 1);
+      showToast(`${symbol.toUpperCase()} favorilerden çıkarıldı`, 'warning');
+    } else {
+      favorites.push({ id, name, symbol });
+      showToast(`${symbol.toUpperCase()} favorilere eklendi 🎉`, 'success');
+    }
     localStorage.setItem('crypto_favs', JSON.stringify(favorites));
     renderFavorites();
     selectCoin(id, name, symbol);
   }
 
+  // GRAFİK
   let priceChartInstance = null;
   function drawChart(prices) {
     const canvas = document.getElementById('priceChart');
@@ -302,20 +542,60 @@
       });
       return;
     }
+    const labels = prices.map((_, i) => {
+      const date = new Date();
+      date.setDate(date.getDate() - (prices.length - 1 - i));
+      return date.toLocaleDateString('tr-TR', { day: '2-digit', month: 'short' });
+    });
     priceChartInstance = new Chart(ctx, {
       type: 'line',
       data: {
-        labels: prices.map((_, i) => i + 1),
+        labels: labels,
         datasets: [{
           label: 'Fiyat',
           data: prices,
           borderColor: '#6366f1',
           backgroundColor: 'rgba(99,102,241,0.08)',
           fill: true,
-          tension: 0.3
+          tension: 0.3,
+          pointRadius: 3,
+          pointBackgroundColor: '#6366f1'
         }]
       },
-      options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            enabled: true,
+            backgroundColor: 'rgba(30, 41, 59, 0.9)',
+            titleColor: '#f8fafc',
+            bodyColor: '#f8fafc',
+            borderColor: '#6366f1',
+            borderWidth: 2,
+            cornerRadius: 12,
+            padding: 12,
+            callbacks: {
+              label: function(context) {
+                let value = context.parsed.y;
+                let prefix = currentCurrency === 'usd' ? '$' : currentCurrency === 'try' ? '₺' : '€';
+                return prefix + value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+              }
+            }
+          }
+        },
+        scales: {
+          x: {
+            grid: { display: false },
+            ticks: { color: '#94a3b8', maxTicksLimit: 10 }
+          },
+          y: {
+            grid: { color: 'rgba(0,0,0,0.05)' },
+            ticks: { color: '#94a3b8' }
+          }
+        }
+      }
     });
   }
 
@@ -348,6 +628,7 @@
     });
   }
 
+  // COIN SEÇİMİ
   function selectCoin(coinId, coinName, symbol) {
     currentCoinId = coinId;
     currentCoinName = coinName;
@@ -402,6 +683,7 @@
     }
   }, LIVE_UPDATE_INTERVAL);
 
+  // KAR/ZARAR
   function calculateProfitLoss() {
     const invested = +document.getElementById('calcInvested').value;
     const buy = +document.getElementById('calcBuyPrice').value;
@@ -419,6 +701,7 @@
     box.style.display = 'block';
   }
 
+  // FEAR & GREED
   function loadFearAndGreed() {
     fetch(`${BASE}/api/fear-greed`)
       .then(r => r.json())
@@ -434,13 +717,28 @@
       });
   }
 
+  // PİYASA ÖZETİ
+  function loadMarketOverview() {
+    fetchApi('global', '', data => {
+      if (data?.data) {
+        const d = data.data;
+        document.getElementById('totalMarketCap').textContent = formatBigNumber(d.total_market_cap?.usd);
+        document.getElementById('totalVolume').textContent = formatBigNumber(d.total_volume?.usd);
+        document.getElementById('btcDominance').textContent = d.market_cap_percentage?.btc?.toFixed(1) + '%';
+        document.getElementById('activeCoins').textContent = d.active_cryptocurrencies?.toLocaleString() || '-';
+      }
+    });
+  }
+
+  // TRENDLER
   function loadTrendingCoins() {
+    showSkeleton(6);
     fetchApi('search/trending', '', data => {
       if (data?.coins) {
         document.getElementById('trendContainer').innerHTML = data.coins.slice(0,6).map(c => `
           <div class="trend-item" onclick="selectCoin('${c.item.id}','${c.item.name}','${c.item.symbol}')">
             <div style="display:flex;align-items:center;gap:8px">
-              <img src="${c.item.small}" width="22" height="22" style="border-radius:50%" onerror="this.style.display='none'">
+              <img src="${c.item.large}" width="32" height="32" style="border-radius:50%; object-fit:cover;" onerror="this.style.display='none'">
               <div><strong>${c.item.name}</strong> <span style="color:var(--text2);font-size:12px">(${c.item.symbol.toUpperCase()})</span></div>
             </div>
             <div style="font-weight:600;color:var(--primary)">#${c.item.market_cap_rank || '-'}</div>
@@ -450,21 +748,27 @@
     });
   }
 
+  // PORTFÖY
   function addPortfolioItem() {
     const amount = +document.getElementById('portfolioAmount').value;
     const price = +document.getElementById('portfolioBuyPrice').value;
-    if (!amount || !price) return;
+    if (!amount || !price) {
+      showToast('Lütfen miktar ve maliyet girin', 'warning');
+      return;
+    }
     portfolio.push({ id: currentCoinId, name: currentCoinName, symbol: currentSymbol, amount, buyPrice: price });
     localStorage.setItem('crypto_portfolio', JSON.stringify(portfolio));
     renderPortfolio();
     document.getElementById('portfolioAmount').value = '';
     document.getElementById('portfolioBuyPrice').value = '';
+    showToast(`${currentSymbol.toUpperCase()} portföye eklendi ✅`, 'success');
   }
 
   function removePortfolioItem(index) {
     portfolio.splice(index, 1);
     localStorage.setItem('crypto_portfolio', JSON.stringify(portfolio));
     renderPortfolio();
+    showToast('Portföyden silindi', 'warning');
   }
 
   function renderPortfolio() {
@@ -487,6 +791,7 @@
     }).join('');
   }
 
+  // COIN ARAMA
   document.getElementById('coinSearch').addEventListener('input', function() {
     const q = this.value.trim().toLowerCase();
     const resultsDiv = document.getElementById('searchResults');
@@ -510,6 +815,7 @@
     });
   });
 
+  // AI ANALİZ
   function getAIAnalysis() {
     const loader = document.getElementById('aiLoader');
     const box = document.getElementById('aiBox');
@@ -532,21 +838,26 @@
       if (d.content) {
         box.textContent = d.content;
         box.style.display = 'block';
+        showToast('AI Analiz tamamlandı ✅', 'success');
       } else {
         box.textContent = 'Hata: ' + (d.error || 'Bilinmeyen');
         box.style.display = 'block';
+        showToast('AI analiz hatası', 'error');
       }
     })
     .catch(e => {
       loader.style.display = 'none';
       box.textContent = 'Bağlantı hatası! Sunucu uyanıyor olabilir. Lütfen 30-60 saniye bekleyip tekrar deneyin.';
       box.style.display = 'block';
+      showToast('Bağlantı hatası', 'error');
       console.error(e);
     });
   }
 
+  // BAŞLAT
   renderFavorites();
   renderPortfolio();
+  loadMarketOverview();
   loadTrendingCoins();
   loadFearAndGreed();
   setTimeout(() => {
