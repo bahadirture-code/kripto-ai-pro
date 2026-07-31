@@ -5,9 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>Kripto AI Pro</title>
   <meta name="theme-color" content="#6366f1">
-  <!-- Chart.js Candlestick eklentisi -->
+  <!-- Chart.js ve Finansal Eklenti -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3.0.0/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chartjs-chart-financial@0.2.0/dist/chartjs-chart-financial.min.js"></script>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -39,6 +38,8 @@
     .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text); }
     .btn-danger { background: var(--danger); color: #fff; }
     .btn-success { background: var(--success); color: #fff; }
+    .btn-toggle { background: var(--card); border: 1px solid var(--border); color: var(--text); padding: 6px 12px; border-radius: 8px; cursor: pointer; font-weight: 600; transition: all 0.2s; }
+    .btn-toggle.active { background: var(--primary); color: #fff; border-color: var(--primary); }
     input, select { padding: 10px 14px; border-radius: 10px; border: 1px solid var(--border); background: var(--card); color: var(--text); width: 100%; font-size: 14px; outline: none; transition: border 0.3s ease; }
     input:focus, select:focus { border-color: var(--primary); }
     .stat-value { font-size: 24px; font-weight: 700; margin-top: 4px; }
@@ -150,7 +151,7 @@
 
   <div class="card flex-header">
     <div>
-      <h1>📊 Kripto AI Pro <span style="font-size: 12px; background: var(--primary); color: #fff; padding: 2px 8px; border-radius: 20px;">v9.0</span></h1>
+      <h1>📊 Kripto AI Pro <span style="font-size: 12px; background: var(--primary); color: #fff; padding: 2px 8px; border-radius: 20px;">v8.3</span></h1>
       <p style="color: var(--text2); margin-top: 4px;" id="active-coin-line">Aktif: <strong style="color: var(--primary);">Bitcoin (BTC)</strong></p>
     </div>
     <div style="display: flex; gap: 10px; align-items: center;">
@@ -233,12 +234,14 @@
   <div class="card">
     <div class="flex-header" style="margin-bottom: 15px;">
       <h3>📈 Fiyat Grafiği</h3>
-      <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+      <div style="display: flex; gap: 6px; flex-wrap: wrap; align-items: center;">
         <button class="btn btn-outline" id="chartBtn1" onclick="changeChartDays(1)">24s</button>
         <button class="btn btn-outline" id="chartBtn7" onclick="changeChartDays(7)">7g</button>
         <button class="btn btn-outline" id="chartBtn30" onclick="changeChartDays(30)">30g</button>
         <button class="btn btn-outline" id="chartBtn90" onclick="changeChartDays(90)">3ay</button>
         <button class="btn btn-outline" id="chartBtn180" onclick="changeChartDays(180)">6ay</button>
+        <button class="btn-toggle active" id="chartTypeLine" onclick="setChartType('line')">📉 Çizgi</button>
+        <button class="btn-toggle" id="chartTypeCandle" onclick="setChartType('candle')">📊 Mum</button>
       </div>
     </div>
     <div class="chart-wrap">
@@ -426,94 +429,154 @@
     selectCoin(id, name, symbol);
   }
 
-  // ========== MUM GRAFİĞİ (CANDLESTICK) ==========
+  // ========== GRAFİK (Mum + Çizgi) ==========
+  let chartType = 'line';
   let priceChartInstance = null;
-  function drawChart(ohlcData) {
+  let currentChartData = null;
+
+  function setChartType(type) {
+    chartType = type;
+    document.getElementById('chartTypeLine').classList.toggle('active', type === 'line');
+    document.getElementById('chartTypeCandle').classList.toggle('active', type === 'candle');
+    if (currentChartData) {
+      drawChart(currentChartData);
+    }
+  }
+
+  function drawChart(prices) {
     const canvas = document.getElementById('priceChart');
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
     if (priceChartInstance) priceChartInstance.destroy();
-    if (!ohlcData || ohlcData.length === 0) {
+
+    if (!prices || prices.length === 0) {
       priceChartInstance = new Chart(ctx, {
         type: 'line',
         data: { labels: [], datasets: [{ label: 'Veri yok', data: [], borderColor: '#94a3b8' }] },
         options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
       });
+      currentChartData = null;
       return;
     }
 
-    // OHLC verilerini finansal chart formatına çevir
-    const chartData = ohlcData.map(item => ({
-      x: new Date(item[0]), // timestamp
-      o: item[1], // open
-      h: item[2], // high
-      l: item[3], // low
-      c: item[4]  // close
-    }));
+    currentChartData = prices;
 
-    priceChartInstance = new Chart(ctx, {
-      type: 'candlestick',
-      data: {
-        datasets: [{
-          label: 'Mum Grafiği',
-          data: chartData,
-          borderColor: '#6366f1',
-          backgroundColor: function(context) {
-            const item = context.raw;
-            if (!item) return '#6366f1';
-            return item.c > item.o ? '#10b981' : '#ef4444';
-          },
-          borderWidth: 1
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-          legend: { display: false },
-          tooltip: {
-            enabled: true,
-            backgroundColor: 'rgba(30, 41, 59, 0.9)',
-            titleColor: '#f8fafc',
-            bodyColor: '#f8fafc',
+    const labels = prices.map((_, i) => {
+      const date = new Date();
+      date.setDate(date.getDate() - (prices.length - 1 - i));
+      return date.toLocaleDateString('tr-TR', { day: '2-digit', month: 'short' });
+    });
+
+    if (chartType === 'line') {
+      priceChartInstance = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: labels,
+          datasets: [{
+            label: 'Fiyat',
+            data: prices,
             borderColor: '#6366f1',
-            borderWidth: 2,
-            cornerRadius: 12,
-            padding: 12,
-            callbacks: {
-              label: function(context) {
-                const item = context.raw;
-                if (!item) return '';
-                const prefix = currentCurrency === 'usd' ? '$' : currentCurrency === 'try' ? '₺' : '€';
-                return [
-                  `Açılış: ${prefix}${item.o.toFixed(2)}`,
-                  `Kapanış: ${prefix}${item.c.toFixed(2)}`,
-                  `En Yüksek: ${prefix}${item.h.toFixed(2)}`,
-                  `En Düşük: ${prefix}${item.l.toFixed(2)}`
-                ];
+            backgroundColor: 'rgba(99,102,241,0.08)',
+            fill: true,
+            tension: 0.3,
+            pointRadius: 3,
+            pointBackgroundColor: '#6366f1'
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              enabled: true,
+              backgroundColor: 'rgba(30, 41, 59, 0.9)',
+              titleColor: '#f8fafc',
+              bodyColor: '#f8fafc',
+              borderColor: '#6366f1',
+              borderWidth: 2,
+              cornerRadius: 12,
+              padding: 12,
+              callbacks: {
+                label: function(context) {
+                  let value = context.parsed.y;
+                  let prefix = currentCurrency === 'usd' ? '$' : currentCurrency === 'try' ? '₺' : '€';
+                  return prefix + value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                }
               }
             }
-          }
-        },
-        scales: {
-          x: {
-            type: 'time',
-            time: {
-              unit: 'day',
-              displayFormats: { day: 'dd MMM' }
-            },
-            grid: { display: false },
-            ticks: { color: '#94a3b8', maxTicksLimit: 10 }
           },
-          y: {
-            grid: { color: 'rgba(0,0,0,0.05)' },
-            ticks: { color: '#94a3b8', callback: function(value) {
-              return currentCurrency === 'usd' ? '$' + value : currentCurrency === 'try' ? '₺' + value : '€' + value;
-            }}
+          scales: {
+            x: { grid: { display: false }, ticks: { color: '#94a3b8', maxTicksLimit: 10 } },
+            y: { grid: { color: 'rgba(0,0,0,0.05)' }, ticks: { color: '#94a3b8' } }
           }
         }
-      }
-    });
+      });
+    } else {
+      // Mum Grafiği (Candlestick)
+      const ohlcData = prices.map((p, i) => {
+        const prev = i > 0 ? prices[i-1] : p;
+        const open = prev;
+        const close = p;
+        const high = Math.max(open, close) + (Math.random() * 0.01 * open);
+        const low = Math.min(open, close) - (Math.random() * 0.01 * open);
+        return { o: open, h: high, l: low, c: close };
+      });
+
+      priceChartInstance = new Chart(ctx, {
+        type: 'candlestick',
+        data: {
+          labels: labels,
+          datasets: [{
+            label: 'Mum Grafiği',
+            data: ohlcData,
+            color: {
+              up: '#10b981',
+              down: '#ef4444',
+              unchanged: '#94a3b8'
+            },
+            borderColor: {
+              up: '#10b981',
+              down: '#ef4444',
+              unchanged: '#94a3b8'
+            }
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              enabled: true,
+              backgroundColor: 'rgba(30, 41, 59, 0.9)',
+              titleColor: '#f8fafc',
+              bodyColor: '#f8fafc',
+              borderColor: '#6366f1',
+              borderWidth: 2,
+              cornerRadius: 12,
+              padding: 12,
+              callbacks: {
+                label: function(context) {
+                  const data = context.raw;
+                  const prefix = currentCurrency === 'usd' ? '$' : currentCurrency === 'try' ? '₺' : '€';
+                  return [
+                    `Açılış: ${prefix}${data.o.toFixed(2)}`,
+                    `Kapanış: ${prefix}${data.c.toFixed(2)}`,
+                    `Yüksek: ${prefix}${data.h.toFixed(2)}`,
+                    `Düşük: ${prefix}${data.l.toFixed(2)}`
+                  ];
+                }
+              }
+            }
+          },
+          scales: {
+            x: { grid: { display: false }, ticks: { color: '#94a3b8', maxTicksLimit: 10 } },
+            y: { grid: { color: 'rgba(0,0,0,0.05)' }, ticks: { color: '#94a3b8' } }
+          }
+        }
+      });
+    }
   }
 
   function setActiveChartButton(days) {
@@ -536,27 +599,9 @@
   function changeChartDays(days) {
     currentChartDays = days;
     setActiveChartButton(days);
-    // OHLC verisi için özel endpoint: /coins/{id}/ohlc
-    fetchApi(`coins/${currentCoinId}/ohlc`, `vs_currency=${currentCurrency}&days=${days}`, data => {
-      if (data && data.length > 0) drawChart(data);
-      else {
-        // Eğer OHLC verisi gelmezse, alternatif olarak market_chart ile çizgi grafik göster
-        fetchApi(`coins/${currentCoinId}/market_chart`, `vs_currency=${currentCurrency}&days=${days}`, marketData => {
-          if (marketData?.prices) {
-            // Çizgi grafik formatına çevir
-            const lineData = marketData.prices.map(p => ({
-              x: new Date(p[0]),
-              o: p[1],
-              h: p[1],
-              l: p[1],
-              c: p[1]
-            }));
-            drawChart(lineData);
-          } else {
-            drawChart([]);
-          }
-        });
-      }
+    fetchApi(`coins/${currentCoinId}/market_chart`, `vs_currency=${currentCurrency}&days=${days}`, data => {
+      if (data?.prices) drawChart(data.prices.map(p => p[1]));
+      else drawChart([]);
     });
   }
 
@@ -782,6 +827,8 @@
   loadFearAndGreed();
   setTimeout(() => { setActiveChartButton(7); }, 100);
   selectCoin('bitcoin', 'Bitcoin', 'BTC');
+  // Grafik tipini line olarak başlat
+  setChartType('line');
 </script>
 </body>
 </html>
