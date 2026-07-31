@@ -7,6 +7,7 @@
   <meta name="theme-color" content="#6366f1">
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
   <style>
+    /* ===== TÜM MEVCUT CSS ===== */
     * { margin: 0; padding: 0; box-sizing: border-box; }
     :root {
       --bg: #f4f6ff; --card: #ffffff; --text: #1e293b; --text2: #64748b;
@@ -36,6 +37,7 @@
     .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text); }
     .btn-danger { background: var(--danger); color: #fff; }
     .btn-success { background: var(--success); color: #fff; }
+    .btn-sm { padding: 4px 12px; font-size: 12px; }
     input, select { padding: 10px 14px; border-radius: 10px; border: 1px solid var(--border); background: var(--card); color: var(--text); width: 100%; font-size: 14px; outline: none; transition: border 0.3s ease; }
     input:focus, select:focus { border-color: var(--primary); }
     .stat-value { font-size: 24px; font-weight: 700; margin-top: 4px; }
@@ -134,6 +136,19 @@
       0% { background-position: -200% 0; }
       100% { background-position: 200% 0; }
     }
+
+    /* ALARM BÖLÜMÜ */
+    .alarm-container {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+      margin-top: 10px;
+    }
+    .alarm-container input { max-width: 180px; }
+    .alarm-status { font-size: 13px; font-weight: 600; margin-left: 10px; }
+    .alarm-status.active { color: var(--success); }
+    .alarm-status.inactive { color: var(--text2); }
   </style>
 </head>
 <body>
@@ -145,9 +160,10 @@
 
   <div id="toastContainer" class="toast-container"></div>
 
+  <!-- HEADER -->
   <div class="card flex-header">
     <div>
-      <h1>📊 Kripto AI Pro <span style="font-size: 12px; background: var(--primary); color: #fff; padding: 2px 8px; border-radius: 20px;">v8.4</span></h1>
+      <h1>📊 Kripto AI Pro <span style="font-size: 12px; background: var(--primary); color: #fff; padding: 2px 8px; border-radius: 20px;">v8.5</span></h1>
       <p style="color: var(--text2); margin-top: 4px;" id="active-coin-line">Aktif: <strong style="color: var(--primary);">Bitcoin (BTC)</strong></p>
     </div>
     <div style="display: flex; gap: 10px; align-items: center;">
@@ -161,6 +177,7 @@
     </div>
   </div>
 
+  <!-- FEAR & GREED -->
   <div class="card" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
     <div>
       <h4 style="color: var(--text2);">😱 Korku ve Açgözlülük Endeksi</h4>
@@ -169,6 +186,7 @@
     <div style="background: rgba(99,102,241,0.1); padding: 8px 16px; border-radius: 12px; font-weight: 600; color: var(--primary);" id="fearGreedVal">-</div>
   </div>
 
+  <!-- PİYASA ÖZETİ -->
   <div class="card">
     <h3>🌍 Piyasa Özeti</h3>
     <div class="grid" id="marketOverview">
@@ -179,6 +197,7 @@
     </div>
   </div>
 
+  <!-- ARAMA & FAVORİLER -->
   <div class="card" style="position: relative;">
     <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 12px;">
       <div style="position: relative; flex: 1; min-width: 280px; max-width: 450px;">
@@ -200,6 +219,7 @@
     </div>
   </div>
 
+  <!-- TRENDLER -->
   <div class="card">
     <h3>🚀 Piyasa Trendleri</h3>
     <div class="trend-grid" id="trendContainer">
@@ -207,6 +227,7 @@
     </div>
   </div>
 
+  <!-- FİYAT KARTI -->
   <div class="card grid">
     <div>
       <div style="color: var(--text2); font-size: 13px;">💰 Fiyat</div>
@@ -227,6 +248,23 @@
     </div>
   </div>
 
+  <!-- 🔔 YENİ: FİYAT ALARMI -->
+  <div class="card">
+    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+      <h3>🔔 Fiyat Alarmı</h3>
+      <span class="alarm-status inactive" id="alarmStatus">⏸️ Alarm yok</span>
+    </div>
+    <div class="alarm-container">
+      <input type="number" id="alarmPrice" placeholder="Hedef fiyat (örn: 70000)" step="0.01">
+      <button class="btn btn-success btn-sm" onclick="setAlarm()">Alarm Kur</button>
+      <button class="btn btn-danger btn-sm" onclick="clearAlarm()">Kaldır</button>
+    </div>
+    <div style="font-size: 12px; color: var(--text2); margin-top: 8px;">
+      💡 Fiyat bu seviyeye ulaştığında tarayıcı bildirimi alacaksın.
+    </div>
+  </div>
+
+  <!-- GRAFİK -->
   <div class="card">
     <div class="flex-header" style="margin-bottom: 15px;">
       <h3>📈 Fiyat Grafiği</h3>
@@ -243,6 +281,7 @@
     </div>
   </div>
 
+  <!-- KAR/ZARAR -->
   <div class="card">
     <h3>🧮 Kâr/Zarar Hesaplama</h3>
     <div class="grid" style="align-items: center;">
@@ -264,6 +303,7 @@
     </div>
   </div>
 
+  <!-- PORTFÖY -->
   <div class="card">
     <h3>💼 Portföy</h3>
     <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 15px;">
@@ -279,6 +319,7 @@
     </table>
   </div>
 
+  <!-- AI ANALİZ -->
   <div class="card">
     <div class="flex-header">
       <h3>🤖 AI Analiz</h3>
@@ -328,6 +369,11 @@
   let lastFetchTime = 0;
   let favorites = JSON.parse(localStorage.getItem('crypto_favs') || '[]');
   let portfolio = JSON.parse(localStorage.getItem('crypto_portfolio') || '[]');
+  
+  // ALARM
+  let alarmTargetPrice = localStorage.getItem('alarmTargetPrice') ? parseFloat(localStorage.getItem('alarmTargetPrice')) : null;
+  let alarmCoinId = localStorage.getItem('alarmCoinId') || null;
+  let alarmTriggered = localStorage.getItem('alarmTriggered') === 'true';
 
   const THROTTLE_DELAY = 300;
   const LIVE_UPDATE_INTERVAL = 30000;
@@ -397,7 +443,85 @@
     selectCoin(currentCoinId, currentCoinName, currentSymbol);
   }
 
-  // ========== FAVORİLER ==========
+  // ================================================================
+  // ALARM FONKSİYONLARI (YENİ)
+  // ================================================================
+  function updateAlarmUI() {
+    const statusEl = document.getElementById('alarmStatus');
+    const inputEl = document.getElementById('alarmPrice');
+    if (alarmTargetPrice && alarmCoinId === currentCoinId) {
+      statusEl.textContent = `🔔 Alarm aktif: ${formatPrice(alarmTargetPrice, currentCurrency)}`;
+      statusEl.className = 'alarm-status active';
+      inputEl.value = alarmTargetPrice;
+    } else {
+      statusEl.textContent = '⏸️ Alarm yok';
+      statusEl.className = 'alarm-status inactive';
+      if (alarmCoinId !== currentCoinId) {
+        // Farklı coine geçildi, alarmı sıfırla ama localStorage'dan silme
+      }
+    }
+  }
+
+  function setAlarm() {
+    const input = document.getElementById('alarmPrice');
+    const price = parseFloat(input.value);
+    if (!price || price <= 0) {
+      showToast('Lütfen geçerli bir fiyat girin.', 'warning');
+      return;
+    }
+
+    // Bildirim izni iste
+    if ('Notification' in window && Notification.permission === 'default') {
+      Notification.requestPermission();
+    }
+
+    alarmTargetPrice = price;
+    alarmCoinId = currentCoinId;
+    alarmTriggered = false; // Yeni alarm kurulduğunda tetikleme durumunu sıfırla
+    localStorage.setItem('alarmTargetPrice', alarmTargetPrice);
+    localStorage.setItem('alarmCoinId', alarmCoinId);
+    localStorage.setItem('alarmTriggered', 'false');
+    updateAlarmUI();
+    showToast(`🔔 ${currentSymbol} için ${formatPrice(price, currentCurrency)} alarmı kuruldu!`, 'success');
+  }
+
+  function clearAlarm() {
+    alarmTargetPrice = null;
+    alarmCoinId = null;
+    alarmTriggered = false;
+    localStorage.removeItem('alarmTargetPrice');
+    localStorage.removeItem('alarmCoinId');
+    localStorage.removeItem('alarmTriggered');
+    document.getElementById('alarmPrice').value = '';
+    updateAlarmUI();
+    showToast('Alarm kaldırıldı.', 'warning');
+  }
+
+  function checkAlarm(currentPrice) {
+    if (!alarmTargetPrice || alarmCoinId !== currentCoinId || alarmTriggered) return;
+    if (currentPrice >= alarmTargetPrice) {
+      alarmTriggered = true;
+      localStorage.setItem('alarmTriggered', 'true');
+      
+      // Tarayıcı Bildirimi
+      if ('Notification' in window && Notification.permission === 'granted') {
+        new Notification('🚀 Kripto AI Pro - Fiyat Alarmı!', {
+          body: `${currentSymbol} hedef fiyatına ulaştı! 🎯 Fiyat: ${formatPrice(currentPrice, currentCurrency)}`,
+          icon: 'https://kripto-ai-pro.onrender.com/favicon.ico'
+        });
+      } else {
+        showToast(`🔔 ${currentSymbol} hedef fiyatına ulaştı! (${formatPrice(currentPrice, currentCurrency)})`, 'success', 8000);
+      }
+      
+      // Toast ile de göster
+      showToast(`🎯 ${currentSymbol} hedef fiyatına ulaştı! (${formatPrice(currentPrice, currentCurrency)})`, 'success', 8000);
+      updateAlarmUI();
+    }
+  }
+
+  // ================================================================
+  // FAVORİLER
+  // ================================================================
   function renderFavorites() {
     const container = document.getElementById('favoritesContainer');
     if (favorites.length === 0) {
@@ -423,7 +547,9 @@
     selectCoin(id, name, symbol);
   }
 
-  // ========== GRAFİK ==========
+  // ================================================================
+  // GRAFİK
+  // ================================================================
   let priceChartInstance = null;
 
   function drawChart(prices) {
@@ -522,12 +648,17 @@
     });
   }
 
-  // ========== COIN SEÇİMİ ==========
+  // ================================================================
+  // COIN SEÇİMİ
+  // ================================================================
   function selectCoin(coinId, coinName, symbol) {
     currentCoinId = coinId;
     currentCoinName = coinName;
     currentSymbol = symbol;
     document.getElementById('active-coin-line').innerHTML = `Aktif: <strong style="color: var(--primary)">${coinName} (${symbol.toUpperCase()})</strong>`;
+
+    // Alarm UI'yi güncelle (coin değiştiğinde alarm durumu)
+    updateAlarmUI();
 
     fetchApi('simple/price', `ids=${coinId}&vs_currencies=${currentCurrency}&include_market_cap=true&include_24hr_vol=true&include_24hr_change=true`, data => {
       if (data?.[coinId]) {
@@ -557,6 +688,9 @@
 
         document.getElementById('calcBuyPrice').value = currentPriceValue;
         calculateProfitLoss();
+        
+        // Alarm kontrolü (ilk yüklemede)
+        checkAlarm(currentPriceValue);
       }
     });
 
@@ -566,18 +700,25 @@
     }, 500);
   }
 
+  // ================================================================
+  // CANLI GÜNCELLEME (Alarm entegre edildi)
+  // ================================================================
   setInterval(() => {
     if (currentCoinId) {
       fetchApi('simple/price', `ids=${currentCoinId}&vs_currencies=${currentCurrency}`, data => {
         if (data?.[currentCoinId]) {
           currentPriceValue = data[currentCoinId][currentCurrency];
           document.getElementById('price').textContent = formatPrice(currentPriceValue, currentCurrency);
+          // Alarm kontrolü
+          checkAlarm(currentPriceValue);
         }
       });
     }
   }, LIVE_UPDATE_INTERVAL);
 
-  // ========== KAR/ZARAR ==========
+  // ================================================================
+  // DİĞER FONKSİYONLAR (Kar/Zarar, Fear-Greed, Piyasa Özeti, Trendler, Portföy, Arama, AI)
+  // ================================================================
   function calculateProfitLoss() {
     const invested = +document.getElementById('calcInvested').value;
     const buy = +document.getElementById('calcBuyPrice').value;
@@ -592,7 +733,6 @@
     box.style.display = 'block';
   }
 
-  // ========== FEAR & GREED ==========
   function loadFearAndGreed() {
     fetch(`${BASE}/api/fear-greed`)
       .then(r => r.json())
@@ -608,7 +748,6 @@
       });
   }
 
-  // ========== PİYASA ÖZETİ ==========
   function loadMarketOverview() {
     fetchApi('global', '', data => {
       if (data?.data) {
@@ -621,7 +760,6 @@
     });
   }
 
-  // ========== TRENDLER ==========
   function loadTrendingCoins() {
     showSkeleton(6);
     fetchApi('search/trending', '', data => {
@@ -639,7 +777,6 @@
     });
   }
 
-  // ========== PORTFÖY ==========
   function addPortfolioItem() {
     const amount = +document.getElementById('portfolioAmount').value;
     const price = +document.getElementById('portfolioBuyPrice').value;
@@ -676,7 +813,6 @@
     }).join('');
   }
 
-  // ========== COIN ARAMA ==========
   document.getElementById('coinSearch').addEventListener('input', function() {
     const q = this.value.trim().toLowerCase();
     const resultsDiv = document.getElementById('searchResults');
@@ -697,7 +833,6 @@
     });
   });
 
-  // ========== AI ANALİZ ==========
   function getAIAnalysis() {
     const loader = document.getElementById('aiLoader');
     const box = document.getElementById('aiBox');
@@ -736,12 +871,24 @@
     });
   }
 
-  // ========== BAŞLATMA ==========
+  // ================================================================
+  // BAŞLATMA
+  // ================================================================
   renderFavorites();
   renderPortfolio();
   loadMarketOverview();
   loadTrendingCoins();
   loadFearAndGreed();
+  
+  // Alarm UI'yi yükle
+  setTimeout(() => { 
+    updateAlarmUI();
+    // Eğer alarm varsa ve bildirim izni istenmemişse, varsayılan olarak iste
+    if (alarmTargetPrice && 'Notification' in window && Notification.permission === 'default') {
+      Notification.requestPermission();
+    }
+  }, 500);
+
   setTimeout(() => { setActiveChartButton(7); }, 100);
   selectCoin('bitcoin', 'Bitcoin', 'BTC');
 </script>
