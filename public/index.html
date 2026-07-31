@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>Kripto AI Pro</title>
   <meta name="theme-color" content="#6366f1">
-  <!-- Chart.js, Finansal Eklenti ve Tarih Adapter -->
+  <!-- Chart.js ve Eklentiler -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3.0.0/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chartjs-chart-financial@0.2.0/dist/chartjs-chart-financial.min.js"></script>
@@ -152,7 +152,7 @@
 
   <div class="card flex-header">
     <div>
-      <h1>📊 Kripto AI Pro <span style="font-size: 12px; background: var(--primary); color: #fff; padding: 2px 8px; border-radius: 20px;">v8.4</span></h1>
+      <h1>📊 Kripto AI Pro <span style="font-size: 12px; background: var(--primary); color: #fff; padding: 2px 8px; border-radius: 20px;">v8.5</span></h1>
       <p style="color: var(--text2); margin-top: 4px;" id="active-coin-line">Aktif: <strong style="color: var(--primary);">Bitcoin (BTC)</strong></p>
     </div>
     <div style="display: flex; gap: 10px; align-items: center;">
@@ -327,7 +327,7 @@
   // ================================================================
   // ANA UYGULAMA
   // ================================================================
-  const BASE = 'https://kripto-ai-pro.onrender.com'; // ✅ DÜZELTİLDİ
+  const BASE = 'https://kripto-ai-pro.onrender.com';
 
   let currentCoinId = 'bitcoin', currentCoinName = 'Bitcoin', currentSymbol = 'BTC';
   let currentCurrency = 'usd', currentPriceValue = 0;
@@ -445,11 +445,15 @@
   }
 
   function drawChart(prices) {
+    console.log('[drawChart] Veri alındı, uzunluk:', prices?.length, 'Tip:', chartType);
     const canvas = document.getElementById('priceChart');
-    if (!canvas) return;
+    if (!canvas) {
+      console.error('[drawChart] Canvas bulunamadı!');
+      return;
+    }
     const ctx = canvas.getContext('2d');
 
-    // 🔥 Önceki chart instance'ı güvenle yok et
+    // Önceki chart'ı yok et
     if (priceChartInstance) {
       priceChartInstance.destroy();
       priceChartInstance = null;
@@ -467,127 +471,138 @@
 
     currentChartData = prices;
 
+    // Tarih etiketleri (kısa)
     const labels = prices.map((_, i) => {
       const date = new Date();
       date.setDate(date.getDate() - (prices.length - 1 - i));
       return date.toLocaleDateString('tr-TR', { day: '2-digit', month: 'short' });
     });
 
-    if (chartType === 'line') {
-      priceChartInstance = new Chart(ctx, {
-        type: 'line',
-        data: {
-          labels: labels,
-          datasets: [{
-            label: 'Fiyat',
-            data: prices,
-            borderColor: '#6366f1',
-            backgroundColor: 'rgba(99,102,241,0.08)',
-            fill: true,
-            tension: 0.3,
-            pointRadius: 3,
-            pointBackgroundColor: '#6366f1'
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: {
-            legend: { display: false },
-            tooltip: {
-              enabled: true,
-              backgroundColor: 'rgba(30, 41, 59, 0.9)',
-              titleColor: '#f8fafc',
-              bodyColor: '#f8fafc',
+    try {
+      if (chartType === 'line') {
+        // Çizgi Grafiği
+        priceChartInstance = new Chart(ctx, {
+          type: 'line',
+          data: {
+            labels: labels,
+            datasets: [{
+              label: 'Fiyat',
+              data: prices,
               borderColor: '#6366f1',
-              borderWidth: 2,
-              cornerRadius: 12,
-              padding: 12,
-              callbacks: {
-                label: function(context) {
-                  let value = context.parsed.y;
-                  let prefix = currentCurrency === 'usd' ? '$' : currentCurrency === 'try' ? '₺' : '€';
-                  return prefix + value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+              backgroundColor: 'rgba(99,102,241,0.08)',
+              fill: true,
+              tension: 0.3,
+              pointRadius: 3,
+              pointBackgroundColor: '#6366f1'
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: { display: false },
+              tooltip: {
+                enabled: true,
+                backgroundColor: 'rgba(30, 41, 59, 0.9)',
+                titleColor: '#f8fafc',
+                bodyColor: '#f8fafc',
+                borderColor: '#6366f1',
+                borderWidth: 2,
+                cornerRadius: 12,
+                padding: 12,
+                callbacks: {
+                  label: function(context) {
+                    let value = context.parsed.y;
+                    let prefix = currentCurrency === 'usd' ? '$' : currentCurrency === 'try' ? '₺' : '€';
+                    return prefix + value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                  }
                 }
               }
+            },
+            scales: {
+              x: { grid: { display: false }, ticks: { color: '#94a3b8', maxTicksLimit: 10 } },
+              y: { grid: { color: 'rgba(0,0,0,0.05)' }, ticks: { color: '#94a3b8' } }
             }
-          },
-          scales: {
-            x: { grid: { display: false }, ticks: { color: '#94a3b8', maxTicksLimit: 10 } },
-            y: { grid: { color: 'rgba(0,0,0,0.05)' }, ticks: { color: '#94a3b8' } }
           }
-        }
-      });
-    } else {
-      // Mum Grafiği (Candlestick)
-      const ohlcData = prices.map((p, i) => {
-        const prev = i > 0 ? prices[i-1] : p;
-        const open = prev;
-        const close = p;
-        const high = Math.max(open, close) + (Math.random() * 0.01 * open);
-        const low = Math.min(open, close) - (Math.random() * 0.01 * open);
-        return { o: open, h: high, l: low, c: close };
-      });
+        });
+      } else {
+        // Mum Grafiği - OHLC verisi oluştur
+        const ohlcData = prices.map((p, i) => {
+          const prev = i > 0 ? prices[i - 1] : p;
+          const open = prev;
+          const close = p;
+          // Rastgele yüksek/düşük ekleyelim (gerçek veri olmadığı için)
+          const high = Math.max(open, close) * (1 + Math.random() * 0.005);
+          const low = Math.min(open, close) * (1 - Math.random() * 0.005);
+          return { o: open, h: high, l: low, c: close };
+        });
 
-      priceChartInstance = new Chart(ctx, {
-        type: 'candlestick',
-        data: {
-          labels: labels,
-          datasets: [{
-            label: 'Mum Grafiği',
-            data: ohlcData,
-            color: {
-              up: '#10b981',
-              down: '#ef4444',
-              unchanged: '#94a3b8'
-            },
-            borderColor: {
-              up: '#10b981',
-              down: '#ef4444',
-              unchanged: '#94a3b8'
-            }
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: {
-            legend: { display: false },
-            tooltip: {
-              enabled: true,
-              backgroundColor: 'rgba(30, 41, 59, 0.9)',
-              titleColor: '#f8fafc',
-              bodyColor: '#f8fafc',
-              borderColor: '#6366f1',
-              borderWidth: 2,
-              cornerRadius: 12,
-              padding: 12,
-              callbacks: {
-                label: function(context) {
-                  const data = context.raw;
-                  const prefix = currentCurrency === 'usd' ? '$' : currentCurrency === 'try' ? '₺' : '€';
-                  return [
-                    `Açılış: ${prefix}${data.o.toFixed(2)}`,
-                    `Kapanış: ${prefix}${data.c.toFixed(2)}`,
-                    `Yüksek: ${prefix}${data.h.toFixed(2)}`,
-                    `Düşük: ${prefix}${data.l.toFixed(2)}`
-                  ];
+        console.log('[drawChart] OHLC örneği:', ohlcData.slice(0, 3));
+
+        priceChartInstance = new Chart(ctx, {
+          type: 'candlestick',
+          data: {
+            labels: labels,
+            datasets: [{
+              label: 'Mum Grafiği',
+              data: ohlcData,
+              color: {
+                up: '#10b981',
+                down: '#ef4444',
+                unchanged: '#94a3b8'
+              },
+              borderColor: {
+                up: '#10b981',
+                down: '#ef4444',
+                unchanged: '#94a3b8'
+              }
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: { display: false },
+              tooltip: {
+                enabled: true,
+                backgroundColor: 'rgba(30, 41, 59, 0.9)',
+                titleColor: '#f8fafc',
+                bodyColor: '#f8fafc',
+                borderColor: '#6366f1',
+                borderWidth: 2,
+                cornerRadius: 12,
+                padding: 12,
+                callbacks: {
+                  label: function(context) {
+                    const data = context.raw;
+                    const prefix = currentCurrency === 'usd' ? '$' : currentCurrency === 'try' ? '₺' : '€';
+                    return [
+                      `Açılış: ${prefix}${data.o.toFixed(2)}`,
+                      `Kapanış: ${prefix}${data.c.toFixed(2)}`,
+                      `Yüksek: ${prefix}${data.h.toFixed(2)}`,
+                      `Düşük: ${prefix}${data.l.toFixed(2)}`
+                    ];
+                  }
                 }
               }
-            }
-          },
-          scales: {
-            x: {
-              grid: { display: false },
-              ticks: { color: '#94a3b8', maxTicksLimit: 10 }
             },
-            y: {
-              grid: { color: 'rgba(0,0,0,0.05)' },
-              ticks: { color: '#94a3b8' }
+            scales: {
+              x: {
+                grid: { display: false },
+                ticks: { color: '#94a3b8', maxTicksLimit: 10 }
+              },
+              y: {
+                grid: { color: 'rgba(0,0,0,0.05)' },
+                ticks: { color: '#94a3b8' }
+              }
             }
           }
-        }
-      });
+        });
+      }
+      console.log('[drawChart] Grafik başarıyla çizildi.');
+    } catch (err) {
+      console.error('[drawChart] Hata:', err);
+      showToast('Grafik çizilemedi: ' + err.message, 'error');
     }
   }
 
@@ -839,7 +854,6 @@
   loadFearAndGreed();
   setTimeout(() => { setActiveChartButton(7); }, 100);
   selectCoin('bitcoin', 'Bitcoin', 'BTC');
-  // Grafik tipini line olarak başlat
   setChartType('line');
 </script>
 </body>
