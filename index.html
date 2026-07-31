@@ -16,30 +16,36 @@
       --bg: #0f172a; --card: #1e293b; --text: #f8fafc; --text2: #94a3b8;
       --border: #334155; --primary: #818cf8; --success: #34d399; --danger: #f87171; --warning: #fbbf24;
     }
-    body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); padding: 20px; display: flex; justify-content: center; min-height: 100vh; }
+    body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); padding: 20px; display: flex; justify-content: center; min-height: 100vh; margin: 0; }
     .container { max-width: 1300px; width: 100%; }
     .card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 20px; margin-bottom: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.03); }
     .flex-header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
     .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
-    .btn { padding: 8px 16px; border-radius: 10px; border: none; font-weight: 700; cursor: pointer; background: var(--primary); color: #fff; font-size: 13px; }
+    .btn { padding: 8px 16px; border-radius: 10px; border: none; font-weight: 700; cursor: pointer; background: var(--primary); color: #fff; font-size: 13px; transition: all 0.2s; }
+    .btn:hover { opacity: 0.85; transform: scale(0.98); }
     .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text); }
     .btn-danger { background: var(--danger); color: #fff; }
     .btn-success { background: var(--success); color: #fff; }
-    input, select { padding: 10px 14px; border-radius: 10px; border: 1px solid var(--border); background: var(--card); color: var(--text); width: 100%; font-size: 14px; }
+    input, select { padding: 10px 14px; border-radius: 10px; border: 1px solid var(--border); background: var(--card); color: var(--text); width: 100%; font-size: 14px; outline: none; }
+    input:focus, select:focus { border-color: var(--primary); }
     .stat-value { font-size: 24px; font-weight: 700; margin-top: 4px; }
     .positive { color: var(--success); }
     .negative { color: var(--danger); }
+    
+    /* ----- DEBUG ALANI (Değişmedi) ----- */
     #debug { background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.3); padding: 12px 16px; border-radius: 10px; font-family: monospace; font-size: 13px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; }
     #debug.error { background: rgba(239, 68, 68, 0.1); border-color: rgba(239, 68, 68, 0.3); color: var(--danger); }
     #debug.success { background: rgba(16, 185, 129, 0.1); border-color: rgba(16, 185, 129, 0.3); color: var(--success); }
+    
     .chart-wrap { height: 300px; width: 100%; position: relative; }
     .search-results { position: absolute; background: var(--card); border: 1px solid var(--border); border-radius: 10px; max-height: 220px; overflow-y: auto; width: 100%; max-width: 450px; z-index: 100; display: none; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
     .search-item { padding: 10px 14px; cursor: pointer; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; }
     .search-item:hover { background: rgba(99, 102, 241, 0.1); }
-    .tag { background: rgba(99, 102, 241, 0.1); color: var(--primary); padding: 6px 12px; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 600; display: inline-block; margin-right: 6px; margin-top: 6px; }
+    .tag { background: rgba(99, 102, 241, 0.1); color: var(--primary); padding: 6px 12px; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 600; display: inline-block; margin-right: 6px; margin-top: 6px; transition: all 0.2s; }
+    .tag:hover { transform: translateY(-2px); box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
     .fav-tag { background: rgba(16, 185, 129, 0.1); color: var(--success); border: 1px solid rgba(16, 185, 129, 0.2); }
     .trend-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 15px; margin-top: 15px; }
-    .trend-item { display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; border-bottom: 1px solid var(--border); cursor: pointer; border-radius: 8px; }
+    .trend-item { display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; border-bottom: 1px solid var(--border); cursor: pointer; border-radius: 8px; transition: background 0.2s; }
     .trend-item:hover { background: rgba(99, 102, 241, 0.05); }
     .ai-box { background: rgba(99, 102, 241, 0.05); border-left: 4px solid var(--primary); padding: 16px; border-radius: 0 12px 12px 0; margin-top: 12px; white-space: pre-wrap; line-height: 1.6; display: none; }
     .spinner { display: inline-block; width: 18px; height: 18px; border: 3px solid rgba(255,255,255,.3); border-radius: 50%; border-top-color: #fff; animation: spin 0.8s linear infinite; vertical-align: middle; margin-right: 6px; }
@@ -53,6 +59,72 @@
     h4 { font-size: 14px; }
     .btn-active { background: var(--primary) !important; color: #fff !important; border-color: var(--primary) !important; }
     .btn-inactive { background: transparent !important; color: var(--text) !important; border: 1px solid var(--border) !important; }
+
+    /* ----- YENİ: TOAST MESAJLARI ----- */
+    .toast-container {
+      position: fixed;
+      bottom: 30px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 9999;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      max-width: 90%;
+      pointer-events: none;
+    }
+    .toast {
+      background: var(--card);
+      color: var(--text);
+      padding: 14px 24px;
+      border-radius: 14px;
+      box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+      border-left: 6px solid var(--primary);
+      font-weight: 600;
+      font-size: 14px;
+      min-width: 200px;
+      text-align: center;
+      pointer-events: auto;
+      animation: slideUp 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+      backdrop-filter: blur(10px);
+      background: rgba(255,255,255,0.9);
+      border: 1px solid var(--border);
+    }
+    body.dark .toast { background: rgba(30, 41, 59, 0.95); }
+    .toast.success { border-left-color: var(--success); }
+    .toast.error { border-left-color: var(--danger); }
+    .toast.warning { border-left-color: var(--warning); }
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(30px) scale(0.9); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    .toast.hide {
+      animation: slideDown 0.3s ease forwards;
+    }
+    @keyframes slideDown {
+      to { opacity: 0; transform: translateY(30px) scale(0.9); }
+    }
+
+    /* ----- YENİ: SKELETON LOADER ----- */
+    .skeleton-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 15px;
+      margin-top: 15px;
+    }
+    .skeleton-item {
+      background: var(--border);
+      height: 50px;
+      border-radius: 10px;
+      background: linear-gradient(90deg, var(--border) 25%, var(--card) 50%, var(--border) 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.5s infinite;
+    }
+    @keyframes shimmer {
+      0% { background-position: -200% 0; }
+      100% { background-position: 200% 0; }
+    }
   </style>
 </head>
 <body>
@@ -62,9 +134,12 @@
     <span id="retryBtn" style="display:none; cursor:pointer; text-decoration:underline; font-weight:bold;" onclick="location.reload()">Yeniden Dene</span>
   </div>
 
+  <!-- Toast Konteynırı -->
+  <div id="toastContainer" class="toast-container"></div>
+
   <div class="card flex-header">
     <div>
-      <h1>📊 Kripto AI Pro <span style="font-size: 12px; background: var(--primary); color: #fff; padding: 2px 8px; border-radius: 20px;">v7.0</span></h1>
+      <h1>📊 Kripto AI Pro <span style="font-size: 12px; background: var(--primary); color: #fff; padding: 2px 8px; border-radius: 20px;">v8.0</span></h1>
       <p style="color: var(--text2); margin-top: 4px;" id="active-coin-line">Aktif: <strong style="color: var(--primary);">Bitcoin (BTC)</strong></p>
     </div>
     <div style="display: flex; gap: 10px; align-items: center;">
@@ -197,7 +272,44 @@
 </div>
 
 <script>
-  // ========== BASE URL ==========
+  // ================================================================
+  // 1. YENİ: TOAST SİSTEMİ
+  // ================================================================
+  function showToast(message, type = 'info', duration = 3000) {
+    const container = document.getElementById('toastContainer');
+    if (!container) return;
+    
+    const toast = document.createElement('div');
+    toast.className = `toast ${type}`;
+    toast.textContent = message;
+    
+    container.appendChild(toast);
+    
+    // Otomatik kaybolma
+    setTimeout(() => {
+      toast.classList.add('hide');
+      setTimeout(() => {
+        if (toast.parentNode) toast.parentNode.removeChild(toast);
+      }, 300);
+    }, duration);
+  }
+
+  // ================================================================
+  // 2. YENİ: SKELETON LOADER
+  // ================================================================
+  function showSkeleton(count = 6) {
+    const container = document.getElementById('trendContainer');
+    let html = '<div class="skeleton-grid">';
+    for (let i = 0; i < count; i++) {
+      html += `<div class="skeleton-item"></div>`;
+    }
+    html += '</div>';
+    container.innerHTML = html;
+  }
+
+  // ================================================================
+  // 3. MEVCUT KODLAR (Sadece Toast/Skeleton entegre edildi)
+  // ================================================================
   const BASE = 'https://kripto-ai-pro.onrender.com';
 
   let currentCoinId = 'bitcoin', currentCoinName = 'Bitcoin', currentSymbol = 'BTC';
@@ -224,24 +336,23 @@
     lastFetchTime = Date.now();
   }
 
-  // ========== DÜZELTİLEN fetchApi ==========
-    async function fetchApi(endpoint, params = '') {
-  try {
-    // encodeURIComponent ile parametre string'inin bozulmasını engelliyoruz
-    const url = `/api/proxy?endpoint=${endpoint}&params=${encodeURIComponent(params)}`;
-    console.log('[FetchApi]', url);
-    
-    const res = await fetch(url);
-    if (!res.ok) {
-      const errData = await res.json().catch(() => ({}));
-      throw new Error(`HTTP ${res.status} - ${errData.details || res.statusText}`);
+  async function fetchApi(endpoint, params, callback) {
+    await throttle();
+    const url = `${BASE}/api/proxy?endpoint=${endpoint}&params=${encodeURIComponent(params || '')}`;
+    console.log(`[FetchApi] ${url}`);
+    try {
+      const res = await fetch(url);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+      if (data && data.error) throw new Error(data.error);
+      callback(data);
+      log(`✓ ${endpoint.split('/')[0]}`, 'success');
+    } catch (err) {
+      console.error('[FetchApi]', err);
+      log(`✗ ${endpoint}: ${err.message}`, 'error');
+      showToast(`Veri yüklenemedi: ${err.message}`, 'error');
     }
-    return await res.json();
-  } catch (err) {
-    console.error('[FetchApi Error]', err.message);
-    throw err;
   }
-}
 
   function log(msg, type) {
     const el = document.getElementById('debugText');
@@ -268,6 +379,7 @@
     selectCoin(currentCoinId, currentCoinName, currentSymbol);
   }
 
+  // ========== FAVORİLER ==========
   function renderFavorites() {
     const container = document.getElementById('favoritesContainer');
     if (favorites.length === 0) {
@@ -281,13 +393,19 @@
 
   function toggleFavorite(id, name, symbol) {
     const index = favorites.findIndex(f => f.id === id);
-    if (index > -1) favorites.splice(index, 1);
-    else favorites.push({ id, name, symbol });
+    if (index > -1) {
+      favorites.splice(index, 1);
+      showToast(`${symbol.toUpperCase()} favorilerden çıkarıldı`, 'warning');
+    } else {
+      favorites.push({ id, name, symbol });
+      showToast(`${symbol.toUpperCase()} favorilere eklendi 🎉`, 'success');
+    }
     localStorage.setItem('crypto_favs', JSON.stringify(favorites));
     renderFavorites();
     selectCoin(id, name, symbol);
   }
 
+  // ========== GRAFİK ==========
   let priceChartInstance = null;
   function drawChart(prices) {
     const canvas = document.getElementById('priceChart');
@@ -348,6 +466,7 @@
     });
   }
 
+  // ========== COIN SEÇİMİ ==========
   function selectCoin(coinId, coinName, symbol) {
     currentCoinId = coinId;
     currentCoinName = coinName;
@@ -402,6 +521,7 @@
     }
   }, LIVE_UPDATE_INTERVAL);
 
+  // ========== KAR/ZARAR ==========
   function calculateProfitLoss() {
     const invested = +document.getElementById('calcInvested').value;
     const buy = +document.getElementById('calcBuyPrice').value;
@@ -419,6 +539,7 @@
     box.style.display = 'block';
   }
 
+  // ========== FEAR & GREED ==========
   function loadFearAndGreed() {
     fetch(`${BASE}/api/fear-greed`)
       .then(r => r.json())
@@ -434,7 +555,9 @@
       });
   }
 
+  // ========== TRENDLER (Skeleton ile) ==========
   function loadTrendingCoins() {
+    showSkeleton(6); // Yüklenirken iskelet göster
     fetchApi('search/trending', '', data => {
       if (data?.coins) {
         document.getElementById('trendContainer').innerHTML = data.coins.slice(0,6).map(c => `
@@ -450,21 +573,27 @@
     });
   }
 
+  // ========== PORTFÖY ==========
   function addPortfolioItem() {
     const amount = +document.getElementById('portfolioAmount').value;
     const price = +document.getElementById('portfolioBuyPrice').value;
-    if (!amount || !price) return;
+    if (!amount || !price) {
+      showToast('Lütfen miktar ve maliyet girin', 'warning');
+      return;
+    }
     portfolio.push({ id: currentCoinId, name: currentCoinName, symbol: currentSymbol, amount, buyPrice: price });
     localStorage.setItem('crypto_portfolio', JSON.stringify(portfolio));
     renderPortfolio();
     document.getElementById('portfolioAmount').value = '';
     document.getElementById('portfolioBuyPrice').value = '';
+    showToast(`${currentSymbol.toUpperCase()} portföye eklendi ✅`, 'success');
   }
 
   function removePortfolioItem(index) {
     portfolio.splice(index, 1);
     localStorage.setItem('crypto_portfolio', JSON.stringify(portfolio));
     renderPortfolio();
+    showToast('Portföyden silindi', 'warning');
   }
 
   function renderPortfolio() {
@@ -487,6 +616,7 @@
     }).join('');
   }
 
+  // ========== COIN ARAMA ==========
   document.getElementById('coinSearch').addEventListener('input', function() {
     const q = this.value.trim().toLowerCase();
     const resultsDiv = document.getElementById('searchResults');
@@ -510,6 +640,7 @@
     });
   });
 
+  // ========== AI ANALİZ ==========
   function getAIAnalysis() {
     const loader = document.getElementById('aiLoader');
     const box = document.getElementById('aiBox');
@@ -532,19 +663,23 @@
       if (d.content) {
         box.textContent = d.content;
         box.style.display = 'block';
+        showToast('AI Analiz tamamlandı ✅', 'success');
       } else {
         box.textContent = 'Hata: ' + (d.error || 'Bilinmeyen');
         box.style.display = 'block';
+        showToast('AI analiz hatası', 'error');
       }
     })
     .catch(e => {
       loader.style.display = 'none';
       box.textContent = 'Bağlantı hatası! Sunucu uyanıyor olabilir. Lütfen 30-60 saniye bekleyip tekrar deneyin.';
       box.style.display = 'block';
+      showToast('Bağlantı hatası', 'error');
       console.error(e);
     });
   }
 
+  // ========== BAŞLATMA ==========
   renderFavorites();
   renderPortfolio();
   loadTrendingCoins();
