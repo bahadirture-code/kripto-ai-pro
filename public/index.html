@@ -5,7 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>Kripto AI Pro</title>
   <meta name="theme-color" content="#6366f1">
+  <!-- Chart.js Candlestick eklentisi -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3.0.0/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-chart-financial@0.2.0/dist/chartjs-chart-financial.min.js"></script>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     :root {
@@ -16,141 +19,50 @@
       --bg: #0f172a; --card: #1e293b; --text: #f8fafc; --text2: #94a3b8;
       --border: #334155; --primary: #818cf8; --success: #34d399; --danger: #f87171; --warning: #fbbf24;
     }
-    body {
-      font-family: 'Segoe UI', system-ui, sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      padding: 20px;
-      display: flex;
-      justify-content: center;
-      min-height: 100vh;
+    body { 
+      font-family: 'Segoe UI', system-ui, sans-serif; 
+      background: var(--bg); 
+      color: var(--text); 
+      padding: 20px; 
+      display: flex; 
+      justify-content: center; 
+      min-height: 100vh; 
       margin: 0;
       transition: background-color 0.3s ease, color 0.3s ease;
     }
     .container { max-width: 1300px; width: 100%; }
-    .card {
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 20px;
-      margin-bottom: 16px;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.03);
-      transition: background 0.3s ease, border 0.3s ease;
-    }
+    .card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 20px; margin-bottom: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.03); transition: background 0.3s ease, border 0.3s ease; }
     .flex-header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
     .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
-    .btn {
-      padding: 8px 16px;
-      border-radius: 10px;
-      border: none;
-      font-weight: 700;
-      cursor: pointer;
-      background: var(--primary);
-      color: #fff;
-      font-size: 13px;
-      transition: all 0.2s;
-    }
+    .btn { padding: 8px 16px; border-radius: 10px; border: none; font-weight: 700; cursor: pointer; background: var(--primary); color: #fff; font-size: 13px; transition: all 0.2s; }
     .btn:hover { opacity: 0.85; transform: scale(0.98); }
     .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text); }
     .btn-danger { background: var(--danger); color: #fff; }
     .btn-success { background: var(--success); color: #fff; }
-    input, select {
-      padding: 10px 14px;
-      border-radius: 10px;
-      border: 1px solid var(--border);
-      background: var(--card);
-      color: var(--text);
-      width: 100%;
-      font-size: 14px;
-      outline: none;
-      transition: border 0.3s ease;
-    }
+    input, select { padding: 10px 14px; border-radius: 10px; border: 1px solid var(--border); background: var(--card); color: var(--text); width: 100%; font-size: 14px; outline: none; transition: border 0.3s ease; }
     input:focus, select:focus { border-color: var(--primary); }
     .stat-value { font-size: 24px; font-weight: 700; margin-top: 4px; }
     .positive { color: var(--success); }
     .negative { color: var(--danger); }
     .market-stat { font-size: 18px; font-weight: 600; }
     .market-label { font-size: 12px; color: var(--text2); }
-
-    #debug {
-      background: rgba(245, 158, 11, 0.1);
-      border: 1px solid rgba(245, 158, 11, 0.3);
-      padding: 12px 16px;
-      border-radius: 10px;
-      font-family: monospace;
-      font-size: 13px;
-      margin-bottom: 15px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
+    
+    #debug { background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.3); padding: 12px 16px; border-radius: 10px; font-family: monospace; font-size: 13px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; }
     #debug.error { background: rgba(239, 68, 68, 0.1); border-color: rgba(239, 68, 68, 0.3); color: var(--danger); }
     #debug.success { background: rgba(16, 185, 129, 0.1); border-color: rgba(16, 185, 129, 0.3); color: var(--success); }
-
+    
     .chart-wrap { height: 300px; width: 100%; position: relative; }
-    .search-results {
-      position: absolute;
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      max-height: 220px;
-      overflow-y: auto;
-      width: 100%;
-      max-width: 450px;
-      z-index: 100;
-      display: none;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-    }
+    .search-results { position: absolute; background: var(--card); border: 1px solid var(--border); border-radius: 10px; max-height: 220px; overflow-y: auto; width: 100%; max-width: 450px; z-index: 100; display: none; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
     .search-item { padding: 10px 14px; cursor: pointer; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; }
     .search-item:hover { background: rgba(99, 102, 241, 0.1); }
-    .tag {
-      background: rgba(99, 102, 241, 0.1);
-      color: var(--primary);
-      padding: 6px 12px;
-      border-radius: 8px;
-      cursor: pointer;
-      font-size: 13px;
-      font-weight: 600;
-      display: inline-block;
-      margin-right: 6px;
-      margin-top: 6px;
-      transition: all 0.2s;
-    }
+    .tag { background: rgba(99, 102, 241, 0.1); color: var(--primary); padding: 6px 12px; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 600; display: inline-block; margin-right: 6px; margin-top: 6px; transition: all 0.2s; }
     .tag:hover { transform: translateY(-2px); box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
     .fav-tag { background: rgba(16, 185, 129, 0.1); color: var(--success); border: 1px solid rgba(16, 185, 129, 0.2); }
     .trend-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 15px; margin-top: 15px; }
-    .trend-item {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 8px 12px;
-      border-bottom: 1px solid var(--border);
-      cursor: pointer;
-      border-radius: 8px;
-      transition: background 0.2s;
-    }
+    .trend-item { display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; border-bottom: 1px solid var(--border); cursor: pointer; border-radius: 8px; transition: background 0.2s; }
     .trend-item:hover { background: rgba(99, 102, 241, 0.05); }
-    .ai-box {
-      background: rgba(99, 102, 241, 0.05);
-      border-left: 4px solid var(--primary);
-      padding: 16px;
-      border-radius: 0 12px 12px 0;
-      margin-top: 12px;
-      white-space: pre-wrap;
-      line-height: 1.6;
-      display: none;
-    }
-    .spinner {
-      display: inline-block;
-      width: 18px;
-      height: 18px;
-      border: 3px solid rgba(255,255,255,.3);
-      border-radius: 50%;
-      border-top-color: #fff;
-      animation: spin 0.8s linear infinite;
-      vertical-align: middle;
-      margin-right: 6px;
-    }
+    .ai-box { background: rgba(99, 102, 241, 0.05); border-left: 4px solid var(--primary); padding: 16px; border-radius: 0 12px 12px 0; margin-top: 12px; white-space: pre-wrap; line-height: 1.6; display: none; }
+    .spinner { display: inline-block; width: 18px; height: 18px; border: 3px solid rgba(255,255,255,.3); border-radius: 50%; border-top-color: #fff; animation: spin 0.8s linear infinite; vertical-align: middle; margin-right: 6px; }
     @keyframes spin { to { transform: rotate(360deg); } }
     table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 14px; }
     th, td { padding: 10px; text-align: left; border-bottom: 1px solid var(--border); }
@@ -162,7 +74,6 @@
     .btn-active { background: var(--primary) !important; color: #fff !important; border-color: var(--primary) !important; }
     .btn-inactive { background: transparent !important; color: var(--text) !important; border: 1px solid var(--border) !important; }
 
-    /* TOAST */
     .toast-container {
       position: fixed;
       bottom: 30px;
@@ -201,12 +112,13 @@
       from { opacity: 0; transform: translateY(30px) scale(0.9); }
       to { opacity: 1; transform: translateY(0) scale(1); }
     }
-    .toast.hide { animation: slideDown 0.3s ease forwards; }
+    .toast.hide {
+      animation: slideDown 0.3s ease forwards;
+    }
     @keyframes slideDown {
       to { opacity: 0; transform: translateY(30px) scale(0.9); }
     }
 
-    /* SKELETON */
     .skeleton-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -238,7 +150,7 @@
 
   <div class="card flex-header">
     <div>
-      <h1>📊 Kripto AI Pro <span style="font-size: 12px; background: var(--primary); color: #fff; padding: 2px 8px; border-radius: 20px;">v8.2</span></h1>
+      <h1>📊 Kripto AI Pro <span style="font-size: 12px; background: var(--primary); color: #fff; padding: 2px 8px; border-radius: 20px;">v9.0</span></h1>
       <p style="color: var(--text2); margin-top: 4px;" id="active-coin-line">Aktif: <strong style="color: var(--primary);">Bitcoin (BTC)</strong></p>
     </div>
     <div style="display: flex; gap: 10px; align-items: center;">
@@ -252,7 +164,6 @@
     </div>
   </div>
 
-  <!-- FEAR & GREED -->
   <div class="card" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
     <div>
       <h4 style="color: var(--text2);">😱 Korku ve Açgözlülük Endeksi</h4>
@@ -261,7 +172,6 @@
     <div style="background: rgba(99,102,241,0.1); padding: 8px 16px; border-radius: 12px; font-weight: 600; color: var(--primary);" id="fearGreedVal">-</div>
   </div>
 
-  <!-- PİYASA ÖZETİ -->
   <div class="card">
     <h3>🌍 Piyasa Özeti</h3>
     <div class="grid" id="marketOverview">
@@ -272,7 +182,6 @@
     </div>
   </div>
 
-  <!-- ARAMA & FAVORİLER -->
   <div class="card" style="position: relative;">
     <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 12px;">
       <div style="position: relative; flex: 1; min-width: 280px; max-width: 450px;">
@@ -294,7 +203,6 @@
     </div>
   </div>
 
-  <!-- TRENDLER -->
   <div class="card">
     <h3>🚀 Piyasa Trendleri</h3>
     <div class="trend-grid" id="trendContainer">
@@ -302,7 +210,6 @@
     </div>
   </div>
 
-  <!-- FİYAT KARTI -->
   <div class="card grid">
     <div>
       <div style="color: var(--text2); font-size: 13px;">💰 Fiyat</div>
@@ -323,7 +230,6 @@
     </div>
   </div>
 
-  <!-- GRAFİK -->
   <div class="card">
     <div class="flex-header" style="margin-bottom: 15px;">
       <h3>📈 Fiyat Grafiği</h3>
@@ -340,7 +246,6 @@
     </div>
   </div>
 
-  <!-- KAR/ZARAR -->
   <div class="card">
     <h3>🧮 Kâr/Zarar Hesaplama</h3>
     <div class="grid" style="align-items: center;">
@@ -362,7 +267,6 @@
     </div>
   </div>
 
-  <!-- PORTFÖY -->
   <div class="card">
     <h3>💼 Portföy</h3>
     <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 15px;">
@@ -378,7 +282,6 @@
     </table>
   </div>
 
-  <!-- AI ANALİZ -->
   <div class="card">
     <div class="flex-header">
       <h3>🤖 AI Analiz</h3>
@@ -402,9 +305,7 @@
     container.appendChild(toast);
     setTimeout(() => {
       toast.classList.add('hide');
-      setTimeout(() => {
-        if (toast.parentNode) toast.parentNode.removeChild(toast);
-      }, 300);
+      setTimeout(() => { if (toast.parentNode) toast.parentNode.removeChild(toast); }, 300);
     }, duration);
   }
 
@@ -414,9 +315,7 @@
   function showSkeleton(count = 6) {
     const container = document.getElementById('trendContainer');
     let html = '<div class="skeleton-grid">';
-    for (let i = 0; i < count; i++) {
-      html += `<div class="skeleton-item"></div>`;
-    }
+    for (let i = 0; i < count; i++) html += `<div class="skeleton-item"></div>`;
     html += '</div>';
     container.innerHTML = html;
   }
@@ -501,7 +400,7 @@
     selectCoin(currentCoinId, currentCoinName, currentSymbol);
   }
 
-  // FAVORİLER
+  // ========== FAVORİLER ==========
   function renderFavorites() {
     const container = document.getElementById('favoritesContainer');
     if (favorites.length === 0) {
@@ -527,14 +426,14 @@
     selectCoin(id, name, symbol);
   }
 
-  // GRAFİK
+  // ========== MUM GRAFİĞİ (CANDLESTICK) ==========
   let priceChartInstance = null;
-  function drawChart(prices) {
+  function drawChart(ohlcData) {
     const canvas = document.getElementById('priceChart');
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
     if (priceChartInstance) priceChartInstance.destroy();
-    if (!prices || prices.length === 0) {
+    if (!ohlcData || ohlcData.length === 0) {
       priceChartInstance = new Chart(ctx, {
         type: 'line',
         data: { labels: [], datasets: [{ label: 'Veri yok', data: [], borderColor: '#94a3b8' }] },
@@ -542,24 +441,29 @@
       });
       return;
     }
-    const labels = prices.map((_, i) => {
-      const date = new Date();
-      date.setDate(date.getDate() - (prices.length - 1 - i));
-      return date.toLocaleDateString('tr-TR', { day: '2-digit', month: 'short' });
-    });
+
+    // OHLC verilerini finansal chart formatına çevir
+    const chartData = ohlcData.map(item => ({
+      x: new Date(item[0]), // timestamp
+      o: item[1], // open
+      h: item[2], // high
+      l: item[3], // low
+      c: item[4]  // close
+    }));
+
     priceChartInstance = new Chart(ctx, {
-      type: 'line',
+      type: 'candlestick',
       data: {
-        labels: labels,
         datasets: [{
-          label: 'Fiyat',
-          data: prices,
+          label: 'Mum Grafiği',
+          data: chartData,
           borderColor: '#6366f1',
-          backgroundColor: 'rgba(99,102,241,0.08)',
-          fill: true,
-          tension: 0.3,
-          pointRadius: 3,
-          pointBackgroundColor: '#6366f1'
+          backgroundColor: function(context) {
+            const item = context.raw;
+            if (!item) return '#6366f1';
+            return item.c > item.o ? '#10b981' : '#ef4444';
+          },
+          borderWidth: 1
         }]
       },
       options: {
@@ -578,21 +482,34 @@
             padding: 12,
             callbacks: {
               label: function(context) {
-                let value = context.parsed.y;
-                let prefix = currentCurrency === 'usd' ? '$' : currentCurrency === 'try' ? '₺' : '€';
-                return prefix + value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                const item = context.raw;
+                if (!item) return '';
+                const prefix = currentCurrency === 'usd' ? '$' : currentCurrency === 'try' ? '₺' : '€';
+                return [
+                  `Açılış: ${prefix}${item.o.toFixed(2)}`,
+                  `Kapanış: ${prefix}${item.c.toFixed(2)}`,
+                  `En Yüksek: ${prefix}${item.h.toFixed(2)}`,
+                  `En Düşük: ${prefix}${item.l.toFixed(2)}`
+                ];
               }
             }
           }
         },
         scales: {
           x: {
+            type: 'time',
+            time: {
+              unit: 'day',
+              displayFormats: { day: 'dd MMM' }
+            },
             grid: { display: false },
             ticks: { color: '#94a3b8', maxTicksLimit: 10 }
           },
           y: {
             grid: { color: 'rgba(0,0,0,0.05)' },
-            ticks: { color: '#94a3b8' }
+            ticks: { color: '#94a3b8', callback: function(value) {
+              return currentCurrency === 'usd' ? '$' + value : currentCurrency === 'try' ? '₺' + value : '€' + value;
+            }}
           }
         }
       }
@@ -612,23 +529,38 @@
     else if (days === 180) activeId = 'chartBtn180';
     if (activeId) {
       const btn = document.getElementById(activeId);
-      if (btn) {
-        btn.classList.remove('btn-inactive');
-        btn.classList.add('btn-active');
-      }
+      if (btn) { btn.classList.remove('btn-inactive'); btn.classList.add('btn-active'); }
     }
   }
 
   function changeChartDays(days) {
     currentChartDays = days;
     setActiveChartButton(days);
-    fetchApi(`coins/${currentCoinId}/market_chart`, `vs_currency=${currentCurrency}&days=${days}`, data => {
-      if (data?.prices) drawChart(data.prices.map(p => p[1]));
-      else drawChart([]);
+    // OHLC verisi için özel endpoint: /coins/{id}/ohlc
+    fetchApi(`coins/${currentCoinId}/ohlc`, `vs_currency=${currentCurrency}&days=${days}`, data => {
+      if (data && data.length > 0) drawChart(data);
+      else {
+        // Eğer OHLC verisi gelmezse, alternatif olarak market_chart ile çizgi grafik göster
+        fetchApi(`coins/${currentCoinId}/market_chart`, `vs_currency=${currentCurrency}&days=${days}`, marketData => {
+          if (marketData?.prices) {
+            // Çizgi grafik formatına çevir
+            const lineData = marketData.prices.map(p => ({
+              x: new Date(p[0]),
+              o: p[1],
+              h: p[1],
+              l: p[1],
+              c: p[1]
+            }));
+            drawChart(lineData);
+          } else {
+            drawChart([]);
+          }
+        });
+      }
     });
   }
 
-  // COIN SEÇİMİ
+  // ========== COIN SEÇİMİ ==========
   function selectCoin(coinId, coinName, symbol) {
     currentCoinId = coinId;
     currentCoinName = coinName;
@@ -683,16 +615,13 @@
     }
   }, LIVE_UPDATE_INTERVAL);
 
-  // KAR/ZARAR
+  // ========== KAR/ZARAR ==========
   function calculateProfitLoss() {
     const invested = +document.getElementById('calcInvested').value;
     const buy = +document.getElementById('calcBuyPrice').value;
     const target = +document.getElementById('calcTargetPrice').value;
     const box = document.getElementById('calcResultBox');
-    if (!invested || !buy || !target || buy <= 0) {
-      box.style.display = 'none';
-      return;
-    }
+    if (!invested || !buy || !target || buy <= 0) { box.style.display = 'none'; return; }
     const amount = invested / buy;
     const final = amount * target;
     const pl = final - invested;
@@ -701,7 +630,7 @@
     box.style.display = 'block';
   }
 
-  // FEAR & GREED
+  // ========== FEAR & GREED ==========
   function loadFearAndGreed() {
     fetch(`${BASE}/api/fear-greed`)
       .then(r => r.json())
@@ -717,7 +646,7 @@
       });
   }
 
-  // PİYASA ÖZETİ
+  // ========== PİYASA ÖZETİ ==========
   function loadMarketOverview() {
     fetchApi('global', '', data => {
       if (data?.data) {
@@ -730,7 +659,7 @@
     });
   }
 
-  // TRENDLER
+  // ========== TRENDLER ==========
   function loadTrendingCoins() {
     showSkeleton(6);
     fetchApi('search/trending', '', data => {
@@ -748,14 +677,11 @@
     });
   }
 
-  // PORTFÖY
+  // ========== PORTFÖY ==========
   function addPortfolioItem() {
     const amount = +document.getElementById('portfolioAmount').value;
     const price = +document.getElementById('portfolioBuyPrice').value;
-    if (!amount || !price) {
-      showToast('Lütfen miktar ve maliyet girin', 'warning');
-      return;
-    }
+    if (!amount || !price) { showToast('Lütfen miktar ve maliyet girin', 'warning'); return; }
     portfolio.push({ id: currentCoinId, name: currentCoinName, symbol: currentSymbol, amount, buyPrice: price });
     localStorage.setItem('crypto_portfolio', JSON.stringify(portfolio));
     renderPortfolio();
@@ -773,10 +699,7 @@
 
   function renderPortfolio() {
     const tbody = document.getElementById('portfolioTableBody');
-    if (!portfolio.length) {
-      tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: var(--text2);">Boş</td></tr>';
-      return;
-    }
+    if (!portfolio.length) { tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: var(--text2);">Boş</td></tr>'; return; }
     tbody.innerHTML = portfolio.map((item, i) => {
       const val = currentPriceValue || item.buyPrice;
       const pl = val * item.amount - item.buyPrice * item.amount;
@@ -791,14 +714,11 @@
     }).join('');
   }
 
-  // COIN ARAMA
+  // ========== COIN ARAMA ==========
   document.getElementById('coinSearch').addEventListener('input', function() {
     const q = this.value.trim().toLowerCase();
     const resultsDiv = document.getElementById('searchResults');
-    if (q.length < 2) {
-      resultsDiv.style.display = 'none';
-      return;
-    }
+    if (q.length < 2) { resultsDiv.style.display = 'none'; return; }
     fetchApi('search', `query=${encodeURIComponent(q)}`, data => {
       if (data?.coins && data.coins.length > 0) {
         resultsDiv.innerHTML = data.coins.map(c => `
@@ -815,7 +735,7 @@
     });
   });
 
-  // AI ANALİZ
+  // ========== AI ANALİZ ==========
   function getAIAnalysis() {
     const loader = document.getElementById('aiLoader');
     const box = document.getElementById('aiBox');
@@ -854,15 +774,13 @@
     });
   }
 
-  // BAŞLAT
+  // ========== BAŞLATMA ==========
   renderFavorites();
   renderPortfolio();
   loadMarketOverview();
   loadTrendingCoins();
   loadFearAndGreed();
-  setTimeout(() => {
-    setActiveChartButton(7);
-  }, 100);
+  setTimeout(() => { setActiveChartButton(7); }, 100);
   selectCoin('bitcoin', 'Bitcoin', 'BTC');
 </script>
 </body>
