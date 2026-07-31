@@ -42,6 +42,8 @@
     .stat-value { font-size: 24px; font-weight: 700; margin-top: 4px; }
     .positive { color: var(--success); }
     .negative { color: var(--danger); }
+    .market-stat { font-size: 18px; font-weight: 600; }
+    .market-label { font-size: 12px; color: var(--text2); }
     
     /* DEBUG ALANI */
     #debug { background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.3); padding: 12px 16px; border-radius: 10px; font-family: monospace; font-size: 13px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; }
@@ -150,7 +152,7 @@
 
   <div class="card flex-header">
     <div>
-      <h1>📊 Kripto AI Pro <span style="font-size: 12px; background: var(--primary); color: #fff; padding: 2px 8px; border-radius: 20px;">v8.0</span></h1>
+      <h1>📊 Kripto AI Pro <span style="font-size: 12px; background: var(--primary); color: #fff; padding: 2px 8px; border-radius: 20px;">v8.1</span></h1>
       <p style="color: var(--text2); margin-top: 4px;" id="active-coin-line">Aktif: <strong style="color: var(--primary);">Bitcoin (BTC)</strong></p>
     </div>
     <div style="display: flex; gap: 10px; align-items: center;">
@@ -164,6 +166,7 @@
     </div>
   </div>
 
+  <!-- KORKU & AÇGÖZLÜLÜK -->
   <div class="card" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
     <div>
       <h4 style="color: var(--text2);">😱 Korku ve Açgözlülük Endeksi</h4>
@@ -172,6 +175,18 @@
     <div style="background: rgba(99,102,241,0.1); padding: 8px 16px; border-radius: 12px; font-weight: 600; color: var(--primary);" id="fearGreedVal">-</div>
   </div>
 
+  <!-- YENİ: PİYASA ÖZETİ KARTI -->
+  <div class="card">
+    <h3>🌍 Piyasa Özeti</h3>
+    <div class="grid" id="marketOverview">
+      <div><div class="market-label">💰 Toplam Piyasa Değeri</div><div class="market-stat" id="totalMarketCap">-</div></div>
+      <div><div class="market-label">📊 24s İşlem Hacmi</div><div class="market-stat" id="totalVolume">-</div></div>
+      <div><div class="market-label">₿ BTC Dominasyonu</div><div class="market-stat" id="btcDominance">-</div></div>
+      <div><div class="market-label">🪙 Aktif Coin</div><div class="market-stat" id="activeCoins">-</div></div>
+    </div>
+  </div>
+
+  <!-- ARAMA & FAVORİLER -->
   <div class="card" style="position: relative;">
     <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 12px;">
       <div style="position: relative; flex: 1; min-width: 280px; max-width: 450px;">
@@ -193,6 +208,7 @@
     </div>
   </div>
 
+  <!-- TRENDLER -->
   <div class="card">
     <h3>🚀 Piyasa Trendleri</h3>
     <div class="trend-grid" id="trendContainer">
@@ -200,6 +216,7 @@
     </div>
   </div>
 
+  <!-- FİYAT KARTI -->
   <div class="card grid">
     <div>
       <div style="color: var(--text2); font-size: 13px;">💰 Fiyat</div>
@@ -220,6 +237,7 @@
     </div>
   </div>
 
+  <!-- GRAFİK -->
   <div class="card">
     <div class="flex-header" style="margin-bottom: 15px;">
       <h3>📈 Fiyat Grafiği</h3>
@@ -236,6 +254,7 @@
     </div>
   </div>
 
+  <!-- KAR/ZARAR -->
   <div class="card">
     <h3>🧮 Kâr/Zarar Hesaplama</h3>
     <div class="grid" style="align-items: center;">
@@ -257,6 +276,7 @@
     </div>
   </div>
 
+  <!-- PORTFÖY -->
   <div class="card">
     <h3>💼 Portföy</h3>
     <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 15px;">
@@ -272,6 +292,7 @@
     </table>
   </div>
 
+  <!-- AI ANALİZ -->
   <div class="card">
     <div class="flex-header">
       <h3>🤖 AI Analiz</h3>
@@ -337,6 +358,14 @@
     if (price === undefined || price === null || isNaN(price)) return '-';
     if (price < 0.01 && price > 0) return prefix + price.toFixed(8).replace(/0+$/, '').replace(/\.$/, '');
     return prefix + price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  }
+
+  function formatBigNumber(num) {
+    if (!num) return '-';
+    if (num >= 1e12) return '$' + (num / 1e12).toFixed(2) + 'T';
+    if (num >= 1e9) return '$' + (num / 1e9).toFixed(2) + 'B';
+    if (num >= 1e6) return '$' + (num / 1e6).toFixed(2) + 'M';
+    return '$' + num.toFixed(2);
   }
 
   async function throttle() {
@@ -415,7 +444,7 @@
     selectCoin(id, name, symbol);
   }
 
-  // ========== GRAFİK ==========
+  // ========== GRAFİK (Gelişmiş Tooltip ile) ==========
   let priceChartInstance = null;
   function drawChart(prices) {
     const canvas = document.getElementById('priceChart');
@@ -430,20 +459,63 @@
       });
       return;
     }
+
+    // Etiketler (tarih/saat)
+    const labels = prices.map((_, i) => {
+      const date = new Date();
+      date.setDate(date.getDate() - (prices.length - 1 - i));
+      return date.toLocaleDateString('tr-TR', { day: '2-digit', month: 'short' });
+    });
+
     priceChartInstance = new Chart(ctx, {
       type: 'line',
       data: {
-        labels: prices.map((_, i) => i + 1),
+        labels: labels,
         datasets: [{
           label: 'Fiyat',
           data: prices,
           borderColor: '#6366f1',
           backgroundColor: 'rgba(99,102,241,0.08)',
           fill: true,
-          tension: 0.3
+          tension: 0.3,
+          pointRadius: 3,
+          pointBackgroundColor: '#6366f1'
         }]
       },
-      options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            enabled: true,
+            backgroundColor: 'rgba(30, 41, 59, 0.9)',
+            titleColor: '#f8fafc',
+            bodyColor: '#f8fafc',
+            borderColor: '#6366f1',
+            borderWidth: 2,
+            cornerRadius: 12,
+            padding: 12,
+            callbacks: {
+              label: function(context) {
+                let value = context.parsed.y;
+                let prefix = currentCurrency === 'usd' ? '$' : currentCurrency === 'try' ? '₺' : '€';
+                return prefix + value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+              }
+            }
+          }
+        },
+        scales: {
+          x: {
+            grid: { display: false },
+            ticks: { color: '#94a3b8', maxTicksLimit: 10 }
+          },
+          y: {
+            grid: { color: 'rgba(0,0,0,0.05)' },
+            ticks: { color: '#94a3b8' }
+          }
+        }
+      }
     });
   }
 
@@ -563,6 +635,19 @@
         document.getElementById('fearGreedVal').textContent = '-';
         document.getElementById('fearGreedText').textContent = 'Sunucu uyanıyor...';
       });
+  }
+
+  // ========== YENİ: PİYASA ÖZETİ ==========
+  function loadMarketOverview() {
+    fetchApi('global', '', data => {
+      if (data?.data) {
+        const d = data.data;
+        document.getElementById('totalMarketCap').textContent = formatBigNumber(d.total_market_cap?.usd);
+        document.getElementById('totalVolume').textContent = formatBigNumber(d.total_volume?.usd);
+        document.getElementById('btcDominance').textContent = d.market_cap_percentage?.btc?.toFixed(1) + '%';
+        document.getElementById('activeCoins').textContent = d.active_cryptocurrencies?.toLocaleString() || '-';
+      }
+    });
   }
 
   // ========== TRENDLER (Skeleton + Büyük Logo) ==========
@@ -692,6 +777,7 @@
   // ========== BAŞLATMA ==========
   renderFavorites();
   renderPortfolio();
+  loadMarketOverview(); // Yeni!
   loadTrendingCoins();
   loadFearAndGreed();
   setTimeout(() => {
