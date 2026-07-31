@@ -7,7 +7,7 @@
   <meta name="theme-color" content="#6366f1">
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
   <style>
-    /* ===== TÜM MEVCUT CSS ===== */
+    /* ===== TÜM MEVCUT CSS (kısaltılmış, aynı) ===== */
     * { margin: 0; padding: 0; box-sizing: border-box; }
     :root {
       --bg: #f4f6ff; --card: #ffffff; --text: #1e293b; --text2: #64748b;
@@ -149,21 +149,114 @@
     .alarm-status { font-size: 13px; font-weight: 600; margin-left: 10px; }
     .alarm-status.active { color: var(--success); }
     .alarm-status.inactive { color: var(--text2); }
+
+    /* ===== YENİ: MODAL ===== */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.6);
+      z-index: 10000;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+      backdrop-filter: blur(4px);
+    }
+    .modal-overlay.active { display: flex; }
+    .modal-content {
+      background: var(--card);
+      color: var(--text);
+      max-width: 600px;
+      width: 100%;
+      max-height: 90vh;
+      overflow-y: auto;
+      border-radius: 24px;
+      padding: 30px;
+      box-shadow: 0 25px 60px rgba(0,0,0,0.3);
+      position: relative;
+      animation: modalSlideIn 0.3s ease;
+    }
+    @keyframes modalSlideIn {
+      from { transform: scale(0.9) translateY(20px); opacity: 0; }
+      to { transform: scale(1) translateY(0); opacity: 1; }
+    }
+    .modal-close {
+      position: absolute;
+      top: 16px;
+      right: 20px;
+      font-size: 28px;
+      cursor: pointer;
+      color: var(--text2);
+      transition: color 0.2s;
+      line-height: 1;
+      background: none;
+      border: none;
+    }
+    .modal-close:hover { color: var(--text); }
+    .modal-header {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+    .modal-header img {
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      object-fit: cover;
+    }
+    .modal-header h2 { font-size: 22px; }
+    .modal-header .symbol { color: var(--text2); font-size: 16px; font-weight: 400; }
+    .modal-body { display: flex; flex-direction: column; gap: 12px; }
+    .modal-body .row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--border); }
+    .modal-body .label { color: var(--text2); }
+    .modal-body .value { font-weight: 600; }
+    .modal-body .value.positive { color: var(--success); }
+    .modal-body .value.negative { color: var(--danger); }
+    .modal-social {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-top: 8px;
+    }
+    .modal-social a {
+      color: var(--primary);
+      text-decoration: none;
+      font-size: 14px;
+      padding: 4px 12px;
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      transition: background 0.2s;
+    }
+    .modal-social a:hover { background: var(--primary); color: #fff; }
+    .modal-loader { text-align: center; padding: 40px 0; color: var(--text2); }
   </style>
 </head>
 <body>
 <div class="container">
+  <!-- DEBUG -->
   <div id="debug">
     <span id="debugText">⏳ Sistem başlatıldı...</span>
     <span id="retryBtn" style="display:none; cursor:pointer; text-decoration:underline; font-weight:bold;" onclick="location.reload()">Yeniden Dene</span>
   </div>
 
+  <!-- TOAST -->
   <div id="toastContainer" class="toast-container"></div>
+
+  <!-- MODAL -->
+  <div class="modal-overlay" id="coinModal">
+    <div class="modal-content">
+      <button class="modal-close" onclick="closeModal()">&times;</button>
+      <div id="modalBody">
+        <div class="modal-loader">⏳ Yükleniyor...</div>
+      </div>
+    </div>
+  </div>
 
   <!-- HEADER -->
   <div class="card flex-header">
     <div>
-      <h1>📊 Kripto AI Pro <span style="font-size: 12px; background: var(--primary); color: #fff; padding: 2px 8px; border-radius: 20px;">v8.5</span></h1>
+      <h1>📊 Kripto AI Pro <span style="font-size: 12px; background: var(--primary); color: #fff; padding: 2px 8px; border-radius: 20px;">v8.6</span></h1>
       <p style="color: var(--text2); margin-top: 4px;" id="active-coin-line">Aktif: <strong style="color: var(--primary);">Bitcoin (BTC)</strong></p>
     </div>
     <div style="display: flex; gap: 10px; align-items: center;">
@@ -227,7 +320,7 @@
     </div>
   </div>
 
-  <!-- FİYAT KARTI -->
+  <!-- FİYAT KARTI + ALARM -->
   <div class="card grid">
     <div>
       <div style="color: var(--text2); font-size: 13px;">💰 Fiyat</div>
@@ -248,7 +341,7 @@
     </div>
   </div>
 
-  <!-- 🔔 YENİ: FİYAT ALARMI -->
+  <!-- ALARM KARTI -->
   <div class="card">
     <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
       <h3>🔔 Fiyat Alarmı</h3>
@@ -444,7 +537,81 @@
   }
 
   // ================================================================
-  // ALARM FONKSİYONLARI (YENİ)
+  // MODAL (YENİ)
+  // ================================================================
+  function openModal() {
+    document.getElementById('coinModal').classList.add('active');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeModal() {
+    document.getElementById('coinModal').classList.remove('active');
+    document.body.style.overflow = '';
+  }
+
+  // Dışarı tıklayınca kapat
+  document.getElementById('coinModal').addEventListener('click', function(e) {
+    if (e.target === this) closeModal();
+  });
+
+  function showCoinDetail(coinId) {
+    openModal();
+    const modalBody = document.getElementById('modalBody');
+    modalBody.innerHTML = `<div class="modal-loader">⏳ ${coinId} bilgileri yükleniyor...</div>`;
+
+    // CoinGecko detay verisini çek
+    fetchApi(`coins/${coinId}`, 'localization=false&tickers=false&market_data=true&community_data=true&developer_data=true', data => {
+      if (data && data.id) {
+        const d = data;
+        const marketData = d.market_data;
+        const price = marketData?.current_price?.usd || 'N/A';
+        const priceChange = marketData?.price_change_percentage_24h || 0;
+        const marketCap = marketData?.market_cap?.usd || 'N/A';
+        const rank = d.market_cap_rank || '-';
+        const circulating = marketData?.circulating_supply || 'N/A';
+        const total = marketData?.total_supply || 'N/A';
+        const max = marketData?.max_supply || 'N/A';
+        const image = d.image?.large || '';
+        const website = d.links?.homepage?.find(l => l) || '#';
+        const twitter = d.links?.twitter_screen_name ? `https://twitter.com/${d.links.twitter_screen_name}` : null;
+        const reddit = d.links?.subreddit_url || null;
+        const github = d.links?.repos_url?.github?.[0] || null;
+        const telegram = d.links?.telegram_channel_identifier ? `https://t.me/${d.links.telegram_channel_identifier}` : null;
+
+        modalBody.innerHTML = `
+          <div class="modal-header">
+            <img src="${image}" alt="${d.name}" onerror="this.style.display='none'">
+            <div>
+              <h2>${d.name} <span class="symbol">(${d.symbol.toUpperCase()})</span></h2>
+              <div style="font-size:20px; font-weight:700;">${formatPrice(price, 'usd')}</div>
+              <div class="${priceChange >= 0 ? 'positive' : 'negative'}" style="font-size:14px;">
+                ${priceChange >= 0 ? '+' : ''}${priceChange.toFixed(2)}% (24s)
+              </div>
+            </div>
+          </div>
+          <div class="modal-body">
+            <div class="row"><span class="label">🏅 Piyasa Sıralaması</span><span class="value">#${rank}</span></div>
+            <div class="row"><span class="label">💰 Piyasa Değeri</span><span class="value">${formatBigNumber(marketCap)}</span></div>
+            <div class="row"><span class="label">🔄 Dolaşımdaki Arz</span><span class="value">${Number(circulating).toLocaleString()}</span></div>
+            <div class="row"><span class="label">📦 Toplam Arz</span><span class="value">${Number(total).toLocaleString()}</span></div>
+            <div class="row"><span class="label">🔒 Maksimum Arz</span><span class="value">${max !== 'N/A' ? Number(max).toLocaleString() : 'Sınırsız'}</span></div>
+            ${website !== '#' ? `<div class="row"><span class="label">🌐 Web Sitesi</span><span class="value"><a href="${website}" target="_blank">${website.replace(/^https?:\/\//, '')}</a></span></div>` : ''}
+          </div>
+          <div class="modal-social">
+            ${twitter ? `<a href="${twitter}" target="_blank">🐦 Twitter</a>` : ''}
+            ${reddit ? `<a href="${reddit}" target="_blank">📛 Reddit</a>` : ''}
+            ${github ? `<a href="${github}" target="_blank">💻 GitHub</a>` : ''}
+            ${telegram ? `<a href="${telegram}" target="_blank">📱 Telegram</a>` : ''}
+          </div>
+        `;
+      } else {
+        modalBody.innerHTML = `<div style="text-align:center;padding:40px 0;color:var(--danger);">❌ Coin bilgileri yüklenemedi.</div>`;
+      }
+    });
+  }
+
+  // ================================================================
+  // ALARM
   // ================================================================
   function updateAlarmUI() {
     const statusEl = document.getElementById('alarmStatus');
@@ -456,9 +623,7 @@
     } else {
       statusEl.textContent = '⏸️ Alarm yok';
       statusEl.className = 'alarm-status inactive';
-      if (alarmCoinId !== currentCoinId) {
-        // Farklı coine geçildi, alarmı sıfırla ama localStorage'dan silme
-      }
+      if (alarmCoinId !== currentCoinId) {}
     }
   }
 
@@ -469,15 +634,12 @@
       showToast('Lütfen geçerli bir fiyat girin.', 'warning');
       return;
     }
-
-    // Bildirim izni iste
     if ('Notification' in window && Notification.permission === 'default') {
       Notification.requestPermission();
     }
-
     alarmTargetPrice = price;
     alarmCoinId = currentCoinId;
-    alarmTriggered = false; // Yeni alarm kurulduğunda tetikleme durumunu sıfırla
+    alarmTriggered = false;
     localStorage.setItem('alarmTargetPrice', alarmTargetPrice);
     localStorage.setItem('alarmCoinId', alarmCoinId);
     localStorage.setItem('alarmTriggered', 'false');
@@ -502,8 +664,6 @@
     if (currentPrice >= alarmTargetPrice) {
       alarmTriggered = true;
       localStorage.setItem('alarmTriggered', 'true');
-      
-      // Tarayıcı Bildirimi
       if ('Notification' in window && Notification.permission === 'granted') {
         new Notification('🚀 Kripto AI Pro - Fiyat Alarmı!', {
           body: `${currentSymbol} hedef fiyatına ulaştı! 🎯 Fiyat: ${formatPrice(currentPrice, currentCurrency)}`,
@@ -512,8 +672,6 @@
       } else {
         showToast(`🔔 ${currentSymbol} hedef fiyatına ulaştı! (${formatPrice(currentPrice, currentCurrency)})`, 'success', 8000);
       }
-      
-      // Toast ile de göster
       showToast(`🎯 ${currentSymbol} hedef fiyatına ulaştı! (${formatPrice(currentPrice, currentCurrency)})`, 'success', 8000);
       updateAlarmUI();
     }
@@ -529,7 +687,7 @@
       return;
     }
     container.innerHTML = favorites.map(f => `
-      <span class="tag fav-tag" onclick="selectCoin('${f.id}','${f.name}','${f.symbol}')">⭐ ${f.symbol.toUpperCase()}</span>
+      <span class="tag fav-tag" onclick="selectCoin('${f.id}','${f.name}','${f.symbol}'); showCoinDetail('${f.id}')">⭐ ${f.symbol.toUpperCase()}</span>
     `).join('');
   }
 
@@ -560,7 +718,6 @@
       priceChartInstance.destroy();
       priceChartInstance = null;
     }
-
     if (!prices || prices.length === 0) {
       priceChartInstance = new Chart(ctx, {
         type: 'line',
@@ -569,13 +726,11 @@
       });
       return;
     }
-
     const labels = prices.map((_, i) => {
       const date = new Date();
       date.setDate(date.getDate() - (prices.length - 1 - i));
       return date.toLocaleDateString('tr-TR', { day: '2-digit', month: 'short' });
     });
-
     priceChartInstance = new Chart(ctx, {
       type: 'line',
       data: {
@@ -656,8 +811,6 @@
     currentCoinName = coinName;
     currentSymbol = symbol;
     document.getElementById('active-coin-line').innerHTML = `Aktif: <strong style="color: var(--primary)">${coinName} (${symbol.toUpperCase()})</strong>`;
-
-    // Alarm UI'yi güncelle (coin değiştiğinde alarm durumu)
     updateAlarmUI();
 
     fetchApi('simple/price', `ids=${coinId}&vs_currencies=${currentCurrency}&include_market_cap=true&include_24hr_vol=true&include_24hr_change=true`, data => {
@@ -688,8 +841,6 @@
 
         document.getElementById('calcBuyPrice').value = currentPriceValue;
         calculateProfitLoss();
-        
-        // Alarm kontrolü (ilk yüklemede)
         checkAlarm(currentPriceValue);
       }
     });
@@ -700,16 +851,12 @@
     }, 500);
   }
 
-  // ================================================================
-  // CANLI GÜNCELLEME (Alarm entegre edildi)
-  // ================================================================
   setInterval(() => {
     if (currentCoinId) {
       fetchApi('simple/price', `ids=${currentCoinId}&vs_currencies=${currentCurrency}`, data => {
         if (data?.[currentCoinId]) {
           currentPriceValue = data[currentCoinId][currentCurrency];
           document.getElementById('price').textContent = formatPrice(currentPriceValue, currentCurrency);
-          // Alarm kontrolü
           checkAlarm(currentPriceValue);
         }
       });
@@ -717,7 +864,7 @@
   }, LIVE_UPDATE_INTERVAL);
 
   // ================================================================
-  // DİĞER FONKSİYONLAR (Kar/Zarar, Fear-Greed, Piyasa Özeti, Trendler, Portföy, Arama, AI)
+  // DİĞER FONKSİYONLAR
   // ================================================================
   function calculateProfitLoss() {
     const invested = +document.getElementById('calcInvested').value;
@@ -765,7 +912,7 @@
     fetchApi('search/trending', '', data => {
       if (data?.coins) {
         document.getElementById('trendContainer').innerHTML = data.coins.slice(0,6).map(c => `
-          <div class="trend-item" onclick="selectCoin('${c.item.id}','${c.item.name}','${c.item.symbol}')">
+          <div class="trend-item" onclick="selectCoin('${c.item.id}','${c.item.name}','${c.item.symbol}'); showCoinDetail('${c.item.id}')">
             <div style="display:flex;align-items:center;gap:8px">
               <img src="${c.item.large}" width="32" height="32" style="border-radius:50%; object-fit:cover;" onerror="this.style.display='none'">
               <div><strong>${c.item.name}</strong> <span style="color:var(--text2);font-size:12px">(${c.item.symbol.toUpperCase()})</span></div>
@@ -820,7 +967,7 @@
     fetchApi('search', `query=${encodeURIComponent(q)}`, data => {
       if (data?.coins && data.coins.length > 0) {
         resultsDiv.innerHTML = data.coins.map(c => `
-          <div class="search-item" onclick="selectCoin('${c.id}','${c.name}','${c.symbol}'); document.getElementById('coinSearch').value=''; document.getElementById('searchResults').style.display='none'">
+          <div class="search-item" onclick="selectCoin('${c.id}','${c.name}','${c.symbol}'); showCoinDetail('${c.id}'); document.getElementById('coinSearch').value=''; document.getElementById('searchResults').style.display='none'">
             <span><strong>${c.symbol.toUpperCase()}</strong> - ${c.name}</span>
             <span style="color:var(--text2);font-size:12px">Seç</span>
           </div>
@@ -880,10 +1027,8 @@
   loadTrendingCoins();
   loadFearAndGreed();
   
-  // Alarm UI'yi yükle
   setTimeout(() => { 
     updateAlarmUI();
-    // Eğer alarm varsa ve bildirim izni istenmemişse, varsayılan olarak iste
     if (alarmTargetPrice && 'Notification' in window && Notification.permission === 'default') {
       Notification.requestPermission();
     }
