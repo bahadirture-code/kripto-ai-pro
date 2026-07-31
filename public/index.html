@@ -5,8 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>Kripto AI Pro</title>
   <meta name="theme-color" content="#6366f1">
-  <!-- Chart.js ve Finansal Eklenti -->
+  <!-- Chart.js, Finansal Eklenti ve Tarih Adapter -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3.0.0/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chartjs-chart-financial@0.2.0/dist/chartjs-chart-financial.min.js"></script>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -151,7 +152,7 @@
 
   <div class="card flex-header">
     <div>
-      <h1>📊 Kripto AI Pro <span style="font-size: 12px; background: var(--primary); color: #fff; padding: 2px 8px; border-radius: 20px;">v8.3</span></h1>
+      <h1>📊 Kripto AI Pro <span style="font-size: 12px; background: var(--primary); color: #fff; padding: 2px 8px; border-radius: 20px;">v8.4</span></h1>
       <p style="color: var(--text2); margin-top: 4px;" id="active-coin-line">Aktif: <strong style="color: var(--primary);">Bitcoin (BTC)</strong></p>
     </div>
     <div style="display: flex; gap: 10px; align-items: center;">
@@ -326,7 +327,7 @@
   // ================================================================
   // ANA UYGULAMA
   // ================================================================
-  const BASE = 'https://kripto-ai-pro.onrender.com';
+  const BASE = 'https://kripto-ai-pro.onrender.com'; // ✅ DÜZELTİLDİ
 
   let currentCoinId = 'bitcoin', currentCoinName = 'Bitcoin', currentSymbol = 'BTC';
   let currentCurrency = 'usd', currentPriceValue = 0;
@@ -447,7 +448,12 @@
     const canvas = document.getElementById('priceChart');
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
-    if (priceChartInstance) priceChartInstance.destroy();
+
+    // 🔥 Önceki chart instance'ı güvenle yok et
+    if (priceChartInstance) {
+      priceChartInstance.destroy();
+      priceChartInstance = null;
+    }
 
     if (!prices || prices.length === 0) {
       priceChartInstance = new Chart(ctx, {
@@ -571,8 +577,14 @@
             }
           },
           scales: {
-            x: { grid: { display: false }, ticks: { color: '#94a3b8', maxTicksLimit: 10 } },
-            y: { grid: { color: 'rgba(0,0,0,0.05)' }, ticks: { color: '#94a3b8' } }
+            x: {
+              grid: { display: false },
+              ticks: { color: '#94a3b8', maxTicksLimit: 10 }
+            },
+            y: {
+              grid: { color: 'rgba(0,0,0,0.05)' },
+              ticks: { color: '#94a3b8' }
+            }
           }
         }
       });
